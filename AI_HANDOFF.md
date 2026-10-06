@@ -37,7 +37,9 @@ written once the architecture doc exists.
 
 ## Architectural decisions
 
-- Controls (proposed in `docs/MOBILE_CONTROLS.md`, pending approval): landscape only; 1280×720
+- 2026-10-06: **Landscape only** (Game Director decision). Smallest checked screen ~5.5"; tablets
+  show more battlefield rather than bigger buttons.
+- Controls (proposed in `docs/MOBILE_CONTROLS.md`, pending approval): 1280×720
   design resolution; one-finger drag pans, long-press-drag box selects; orders fire on finger
   up; gesture thresholds live in a data file. Recommendation to the architect: one input layer
   turns touches/mouse into intents (Tap, DoubleTap, LongPressDrag, Pan, Pinch).
@@ -49,8 +51,8 @@ written once the architecture doc exists.
 
 ## Proposed changes awaiting the Game Director
 
-- Answer `docs/MOBILE_CONTROLS.md` §16 (landscape only, smallest phone, pan vs box-select
-  gesture, ✓/✕ placement confirm).
+- Answer `docs/MOBILE_CONTROLS.md` §16 questions 3–4 (pan vs box-select gesture, ✓/✕ placement
+  confirm). Landscape and screen size are settled.
 - Assign an owner for `docs/ART_DIRECTION.md`.
 - Complete the fog-of-war section of the brief (it is cut off mid-sentence).
 - Pin an exact Godot 4.x version (belongs in `TECHNICAL_ARCHITECTURE.md`).

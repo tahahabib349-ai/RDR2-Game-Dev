@@ -29,12 +29,16 @@
 
 | Assumption | Why it matters | Default used here |
 |---|---|---|
-| Orientation | Layout | **Landscape only** (both landscape directions allowed) |
-| Smallest supported screen | Button and tap sizes | ~5.5" phone, 16:9 up to 20:9 aspect |
+| Orientation | Layout | **Landscape only** (both landscape directions allowed). ✅ Confirmed by Game Director 2026-10-06 |
+| Smallest supported screen | Button and tap sizes | ~5.5" phone, 16:9 up to 20:9 aspect. Layout adapts automatically; this only sets the smallest screen we check for cramping. ✅ Default accepted |
 | Design resolution | All pixel sizes in this doc | **1280 × 720** (scaled to the real screen, extra width revealed, never cropped) |
 | 2D or 3D, camera angle | How taps find units, how zoom works | **Undecided** (🟢 architecture doc). This doc works for both; see §12. |
 
 All sizes below are in **design pixels at 720 px screen height** and scale with the screen.
+
+**Tablets and large screens:** buttons keep roughly the same *physical* size (finger-sized), and
+the extra screen space shows more battlefield, rather than everything simply getting bigger.
+Codex can do this by raising the design resolution on screens larger than about 7".
 
 ## 3. Screen layout (landscape)
 
@@ -297,8 +301,8 @@ unit still selects it; a touch starting on a button never moves units.
 
 ## 16. Open questions for the Game Director
 
-1. **Landscape only?** (Recommended: yes.)
-2. **Oldest/smallest phone** we must support? (Default: a ~5.5" screen.)
+1. ~~Landscape only?~~ ✅ Yes, landscape only (Game Director, 2026-10-06).
+2. ~~Smallest phone?~~ ✅ Default (~5.5") accepted; layout auto-adjusts.
 3. **One-finger drag pans, long-press boxes** — OK as the starting point, with a "box" toggle
    as the fallback if playtests disagree?
 4. **Placement with ✓/✕ confirm** — OK, or would you rather have faster tap-to-place and
