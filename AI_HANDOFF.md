@@ -23,6 +23,10 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
 
 ## Completed work
 
+- 2026-10-06 · 🟣 Claude · Reviewed Phase 1 against `MOBILE_CONTROLS.md` §14/§15 and the
+  blueprint. Re-ran setup + suite: 88 passed, 0 failed, exit 0. Every Phase 1 control is present;
+  no later-phase scope. Findings logged under Known issues (camera edge visibility, a third route
+  along the west edge, undocumented ridge extension, `rg` dependency in `tools/test.sh`).
 - 2026-10-06 · 🔨 Codex · Implemented Phase 1 only: Godot project/scenes, Resource-based
   gesture/map/unit data, logical-to-isometric conversion, greybox terrain, shared AStarGrid2D,
   distinct group slots, local spacing/re-path recovery, fixed 20 Hz movement and visual interpolation.
@@ -107,6 +111,19 @@ Phase 2 is not started or authorized by this task.
 
 ## Known issues
 
+- 🟣 Review 2026-10-06 · **Camera can't show the map's edges.** The camera keeps the whole screen
+  inside the map diamond, so strips along every edge can never be on screen: about 12% of
+  walkable cells at the default zoom (1.5) and 5% even fully zoomed in (2.5), measured at
+  1280×720. Units can walk there and vanish. Conflicts with MISSION_ZERO ("clamped to the full
+  playable map with a small presentation margin") and MOBILE_CONTROLS §8. Owner: 🔨 Codex.
+- 🟣 Review 2026-10-06 · **Third route along the west edge.** The ridge starts at (8,40) as the
+  blueprint says, which leaves cells x<7 open. With Central Pass and East Cut both closed, a path
+  of 75 cells still links the bases (Central route 58, East Cut route 68). MISSION_ZERO describes
+  two routes. Design decision: 🟢 ChatGPT.
+- 🟣 Review 2026-10-06 · `mission_zero.tres` extends the ridge beyond the blueprint's (48,18)
+  end, through (56,32), (50,42) and (58,56), to force the East Cut. It's a reasonable reading but
+  undocumented; 🟢 ChatGPT should confirm it or update MISSION_ZERO.md.
+- 🟣 Review 2026-10-06 · `game/tools/test.sh` needs ripgrep (`rg`); use `grep` so it runs anywhere.
 - Blueprint balance numbers remain tunable starting values; only movement is implemented/tested.
 - The 0.2 s box-vs-pinch rule is covered by automated tests, but physical-phone feel is untested.
   A dedicated box button remains a fallback if playtests show the gesture is unreliable.
@@ -118,6 +135,7 @@ Phase 2 is not started or authorized by this task.
 
 ## Recently modified files
 
+- 2026-10-06: `AI_HANDOFF.md` (🟣 Claude Phase 1 review findings)
 - 2026-10-06 · 🔨 Codex: `game/` project, scenes, scripts, `.tres` data, headless runner, pinned
   setup/test scripts and README; `AI_HANDOFF.md`, `ROADMAP.md`.
 
