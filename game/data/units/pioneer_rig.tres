@@ -4,8 +4,8 @@
 script = ExtResource("1")
 type_id = &"pioneer_rig"
 display_name = "Pioneer Rig"
-speed = 2.3
-spacing_radius = 0.6
+speed = 1.6
+spacing_radius = 1.25
 army = false
 vehicle = true
 color = Color(0.65, 0.65, 0.95, 1)

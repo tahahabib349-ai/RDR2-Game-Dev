@@ -42,58 +42,57 @@ func test_gestures() -> void:
 	r.motion(0, Vector2(100, 100), 0.1)
 	r.up(0, Vector2(100, 100), 0.11)
 	check(count_kind(&"tap") == 0, "drag returning to start never becomes a tap")
-	check(count_kind(&"pan_end") == 1 and Vector2(events[-1].velocity).length() > 0, "quick flick retains inertia velocity")
+	check(count_kind(&"pan_end") == 1 and Vector2(events.filter(func(e): return e.kind == &"pan_end")[-1].velocity).length() > 0, "quick flick retains inertia velocity")
 	r = fresh()
 	r.down(0, Vector2.ZERO, 0)
 	r.motion(0, Vector2(30, 0), 0.1)
 	r.up(0, Vector2(30, 0), 1)
-	check(events[-1].velocity == Vector2.ZERO, "pause before release suppresses stale inertia")
+	check(events.filter(func(e): return e.kind == &"pan_end")[-1].velocity == Vector2.ZERO, "pause before release suppresses stale inertia")
 	r = fresh()
 	r.down(0, Vector2(100, 100), 0)
-	r.down(1, Vector2(200, 200), 0.01)
-	r.advance(0.20)
-	check(count_kind(&"box_preview") == 0, "hold measured from second finger, not first")
-	r.advance(0.211)
-	check(count_kind(&"box_preview") == 1, "still fingers enter box after 0.2 seconds")
-	r.motion(1, Vector2(350, 300), 0.25)
-	check(count_kind(&"pinch") == 0, "box stays locked while fingers spread")
-	r.up(0, Vector2(100, 100), 0.3)
-	check(count_kind(&"box_select") == 0, "box waits for both lifts")
-	r.motion(1, Vector2(600, 500), 0.31)
-	r.up(1, Vector2(600, 500), 0.32)
-	check(count_kind(&"box_select") == 1 and events[-1].rect == Rect2(100, 100, 250, 200), "first lift freezes box; second commits it")
-	check(count_kind(&"tap") == 0, "second finger cancels pending tap")
+	r.advance(0.399)
+	check(r.mode == &"tap" and count_kind(&"hold_progress") > 0, "hold ring progresses before 0.4 seconds")
+	r.advance(0.4)
+	check(r.mode == &"box", "one-finger hold enters box at 0.4 seconds")
+	r.motion(0, Vector2(350, 300), 0.45)
+	r.up(0, Vector2(350, 300), 0.5)
+	check(count_kind(&"box_select") == 1 and count_kind(&"tap") == 0 and count_kind(&"pan") == 0, "held one-finger drag selects without pan/order")
 	r = fresh()
 	r.down(0, Vector2(100, 100), 0)
-	r.down(1, Vector2(200, 200), 0.01)
-	r.motion(1, Vector2(260, 260), 0.05)
-	check(count_kind(&"pinch") == 1 and float(events[-1].factor) > 1, "immediate spread produces zoom")
-	r.advance(1)
-	r.up(1, Vector2(260, 260), 1.01)
-	r.motion(0, Vector2(350, 300), 1.02)
-	r.up(0, Vector2(350, 300), 1.1)
-	check(count_kind(&"box_preview") == 0 and count_kind(&"tap") == 0 and count_kind(&"pan") == 0, "pinch never becomes box, pan, or tap on remaining finger")
+	r.motion(0, Vector2(119, 100), 0.2)
+	r.advance(0.4)
+	check(r.mode == &"box", "19 px hold jitter stays within 20 px slop")
+	r.up(0, Vector2(119, 100), 0.5)
+	check(count_kind(&"box_select") == 0 and count_kind(&"tap") == 0, "hold lifted without dragging changes nothing")
+	r = fresh()
+	r.down(0, Vector2.ZERO, 0)
+	r.motion(0, Vector2(21, 0), 0.39)
+	r.advance(0.5)
+	check(r.mode == &"pan" and count_kind(&"box_preview") == 0, "moving beyond slop before hold completion pans")
+	r.up(0, Vector2(21, 0), 0.6)
+	r = fresh()
+	r.down(0, Vector2(100, 100), 0)
+	r.advance(0.4)
+	r.motion(0, Vector2(350, 300), 0.45)
+	r.down(1, Vector2(500, 400), 0.5)
+	r.motion(1, Vector2(550, 450), 0.55)
+	r.advance(2)
+	r.up(0, Vector2(350, 300), 2.1)
+	r.motion(1, Vector2(600, 500), 2.2)
+	r.up(1, Vector2(600, 500), 2.3)
+	check(count_kind(&"box_select") == 0 and count_kind(&"pinch") == 1 and count_kind(&"tap") == 0, "second finger cancels an active box; remaining finger cannot select/order")
 	r = fresh()
 	r.down(0, Vector2.ZERO, 0)
 	r.down(1, Vector2(100, 100), 0.01)
-	r.motion(0, Vector2(10, 0), 0.05)
-	r.motion(1, Vector2(110, 100), 0.06)
-	r.advance(0.211)
-	check(r.mode == &"box", "sub-15 px per-finger hold jitter still boxes")
-	r = fresh()
-	r.down(0, Vector2.ZERO, 0)
-	r.down(1, Vector2(100, 100), 0.01)
-	r.up(0, Vector2.ZERO, 0.1)
-	r.up(1, Vector2(100, 100), 0.11)
-	check(count_kind(&"tap") == 0 and count_kind(&"box_select") == 0, "short two-finger contact gives no order")
-	r = fresh()
-	r.down(0, Vector2.ZERO, 0)
-	r.down(1, Vector2(100, 100), 0.01)
-	r.advance(0.25)
-	r.down(2, Vector2(200, 200), 0.3)
-	r.up(0, Vector2.ZERO, 0.31)
-	r.up(1, Vector2(100, 100), 0.32)
-	r.up(2, Vector2(200, 200), 0.33)
+	r.advance(2)
+	check(r.mode == &"pinch" and count_kind(&"box_preview") == 0, "stationary two fingers never become selection")
+	r.motion(0, Vector2(30, 0), 2.1)
+	r.motion(1, Vector2(130, 100), 2.2)
+	check(count_kind(&"pinch") == 2, "two-finger translation emits camera intents")
+	r.down(2, Vector2(200, 200), 2.3)
+	r.up(0, Vector2(30, 0), 2.4)
+	r.up(1, Vector2(130, 100), 2.5)
+	r.up(2, Vector2(200, 200), 2.6)
 	check(count_kind(&"box_select") == 0 and r.mode == &"idle", "third finger cancels and drains the sequence")
 	r = fresh()
 	r.down(0, Vector2(100, 100), 0)
@@ -131,7 +130,7 @@ func test_paths() -> void:
 	var map := MapModel.new(mission)
 	var paths := PathService.new(map)
 	var iso := IsoProjection.new(Vector2(mission.tile_size))
-	check(map.config.size == Vector2i(72, 72), "Mission Zero is 72x72")
+	check(map.config.size == Vector2i(108, 108), "Mission Zero is 108x108")
 	check(not map.blocked.is_empty(), "rocky ridge blocks cells")
 	check(iso.to_logical(iso.to_iso(Vector2(12.25, 58.75))).is_equal_approx(Vector2(12.25, 58.75)), "projection round trip preserves continuous logical positions")
 	check(iso.to_iso(Vector2(1, 0)) == Vector2(32, 16) and iso.to_iso(Vector2(0, 1)) == Vector2(-32, 16), "64x32 isometric basis")
@@ -142,7 +141,7 @@ func test_paths() -> void:
 				open = open and map.passable(Vector2i(center) + Vector2i(x, y))
 		check(open, "pass has at least a 5-cell open core at " + str(center))
 	var route := paths.path(mission.player_start, mission.enemy_base)
-	check(route.size() > 2 and route[-1] == Vector2(60.5, 14.5), "route reaches enemy-base site from player basin")
+	check(route.size() > 2 and route[-1] == mission.enemy_base.floor() + Vector2(0.5, 0.5), "route reaches enemy-base site from player basin")
 	var valid := true
 	for i in range(route.size()):
 		valid = valid and map.passable(map.cell_of(route[i]))
@@ -150,7 +149,13 @@ func test_paths() -> void:
 			valid = valid and paths.can_traverse(route[i - 1], route[i])
 	check(valid, "mission route stays passable and does not cut blocked corners")
 	check(paths.path(Vector2(-1, 0), Vector2(10, 10)).is_empty(), "out-of-bounds start rejected")
-	check(paths.path(Vector2(12, 58), Vector2(72, 72)).is_empty(), "out-of-bounds destination rejected")
+	check(paths.path(mission.player_start, Vector2(mission.size)).is_empty(), "out-of-bounds destination rejected")
+	var sealed: MissionConfig = mission.duplicate()
+	sealed.central_pass_radius = -1
+	sealed.east_cut_radius = -1
+	var sealed_paths := PathService.new(MapModel.new(sealed))
+	var closed_route := sealed_paths.grid.get_id_path(Vector2i(mission.player_start), Vector2i(mission.enemy_base), false)
+	check(closed_route.is_empty(), "blocking both passes leaves no base-to-base route")
 	var blocked_cell: Vector2i = map.blocked.keys()[0]
 	var fallback := paths.path(mission.player_start, Vector2(blocked_cell))
 	check(not fallback.is_empty() and map.passable(map.cell_of(fallback[-1])), "blocked destination resolves to passable reachable cell")
@@ -207,10 +212,12 @@ func test_scene() -> void:
 	var layer := session.input_layer
 	layer.set_process(false)
 	session.camera.set_process(false)
+	check(settings.min_zoom == 1.0 and settings.box_hold_seconds == 0.4 and settings.box_hold_slop == 20.0, "playtest gesture thresholds live in the Resource")
+	check(session.hud.buttons[0].text == "X" and ThemeDB.fallback_font.has_char("X".unicode_at(0)), "deselect uses a glyph present in the exported fallback font")
 	check(session.units.size() == 7, "playable scene spawns seven labelled placeholder units")
-	check(session.terrain.get_used_cells().size() == 72 * 72, "TileMapLayer renders all 5184 cells")
+	check(session.terrain.get_used_cells().size() == mission.size.x * mission.size.y, "TileMapLayer renders every mission cell")
 	var alignment := true
-	for cell in [Vector2i.ZERO, Vector2i(12, 58), Vector2i(60, 14), Vector2i(71, 71)]:
+	for cell in [Vector2i.ZERO, Vector2i(mission.player_start), Vector2i(mission.enemy_base), mission.size - Vector2i.ONE]:
 		alignment = alignment and (session.terrain.position + session.terrain.map_to_local(cell)).is_equal_approx(session.projection.to_iso(Vector2(cell) + Vector2(0.5, 0.5)))
 	check(alignment, "TileMap diamonds align with authoritative logical cells")
 	var ranger := session.units[1]
@@ -290,6 +297,14 @@ func test_scene() -> void:
 	mouse(layer, session.unit_screen(ranger), true, 5.5)
 	mouse(layer, session.unit_screen(ranger), false, 5.55)
 	check(session.selection.selected == [ranger], "desktop left click uses same tap selection")
+	mouse(layer, hit - Vector2(60, 60), true, 5.7)
+	layer.recognizer.advance(6.11)
+	var held_motion := InputEventMouseMotion.new()
+	held_motion.position = hit + Vector2(60, 60)
+	layer.feed(held_motion, 6.15)
+	check(session.hud.box_visible, "desktop left-button hold then drag previews a box")
+	mouse(layer, held_motion.position, false, 6.2)
+	check(not session.hud.box_visible and session.selection.selected.has(ranger), "desktop held drag commits without a move")
 	var safe := PhaseOneHUD.fit_safe_area(Rect2(120, 0, 2280, 1020), Vector2(2560, 1080), Vector2(1706.6667, 720))
 	check(safe.position.is_equal_approx(Vector2(80, 0)) and is_equal_approx(safe.end.y, 680), "phone notch and home strip convert to design coordinates")
 	check(PhaseOneHUD.fit_safe_area(Rect2(), Vector2(1280, 720), Vector2(1280, 720)) == Rect2(0, 0, 1280, 720), "empty desktop safe area falls back to viewport")
@@ -298,7 +313,7 @@ func test_scene() -> void:
 		buttons_fit = buttons_fit and button.size.x >= 80 and button.size.y >= 80 and session.hud.safe_rect().encloses(button.get_global_rect())
 	check(buttons_fit, "all buttons are at least 80x80 and inside safe area")
 	# Anchor-preserving zoom away from map edges.
-	session.camera.position = session.projection.to_iso(Vector2(36, 36))
+	session.camera.position = session.projection.to_iso(Vector2(mission.size) * 0.5)
 	session.camera.zoom = Vector2.ONE * 1.5
 	session.camera.clamp_view()
 	var anchor := Vector2(500, 300)
@@ -306,7 +321,7 @@ func test_scene() -> void:
 	session.camera.consume({"kind": &"pinch", "previous_point": anchor, "point": anchor, "factor": 1.2})
 	check(session.camera.screen_to_world(anchor).is_equal_approx(anchor_world), "pinch keeps world point under finger midpoint")
 	var bounded := true
-	for location in [Vector2(-100, -100), Vector2(100, 100), Vector2(0, 72), Vector2(72, 0)]:
+	for location in [Vector2(-100, -100), Vector2(100, 100), Vector2(0, mission.size.y), Vector2(mission.size.x, 0)]:
 		session.camera.position = session.projection.to_iso(location)
 		session.camera.zoom = Vector2.ONE * 0.1
 		session.camera.clamp_view()
@@ -318,12 +333,12 @@ func test_scene() -> void:
 	# Real move order from raw tap, distinct group slots, continuous movement.
 	session.camera.configure(session.projection, mission, settings)
 	session.consume({"kind": &"all_army"})
-	session.camera.position = session.projection.to_iso(Vector2(18, 57))
+	session.camera.position = session.projection.to_iso(mission.player_start + Vector2(6, -1))
 	session.camera.clamp_view()
-	var ground := session.camera.world_to_screen(session.projection.to_iso(Vector2(23.5, 54.5)))
+	var ground := session.camera.world_to_screen(session.projection.to_iso(mission.player_start + Vector2(16.5, -3.5)))
 	check(not session.hud.hits_ui(ground), "integration move target is battlefield, not UI")
-	touch(layer, 0, ground, true, 6)
-	touch(layer, 0, ground, false, 6.1)
+	touch(layer, 0, ground, true, 7)
+	touch(layer, 0, ground, false, 7.1)
 	check(session.marker_left > 0, "raw ground tap issues move and one-second marker")
 	var destinations: Dictionary = {}
 	for unit in session.selection.selected:
@@ -332,10 +347,13 @@ func test_scene() -> void:
 	check(destinations.size() == 5, "group move allocates five distinct reachable destinations")
 	var requests_before := session.paths.requests
 	var movement_valid := true
+	var group_spacing := INF
 	for tick in range(600):
 		session.simulate_tick(0.05)
+		group_spacing = minf(group_spacing, minimum_spacing(session.units))
 		for unit in session.units:
 			movement_valid = movement_valid and session.map.passable(session.map.cell_of(unit.logical_position))
+	check(group_spacing >= 0.999, "actual army move keeps full spacing around idle Rig and Gatherer")
 	check(movement_valid, "30 seconds of group movement never enters blocked terrain")
 	var arrived := true
 	for unit in session.selection.selected:
@@ -344,7 +362,7 @@ func test_scene() -> void:
 	check(session.paths.requests == requests_before, "normal movement does not recompute paths every tick")
 	# A changed map invalidates a route, but does not force per-tick re-pathing.
 	var lone := session.units[0]
-	lone.set_route(session.paths.path(lone.logical_position, Vector2(25.5, 60.5)))
+	lone.set_route(session.paths.path(lone.logical_position, mission.player_start + Vector2(13.5, 8.5)))
 	var obstacle := session.map.cell_of(lone.route[2])
 	session.paths.set_blocked(obstacle, true)
 	var replan_before := session.paths.requests
@@ -355,15 +373,103 @@ func test_scene() -> void:
 	# Long mission crossing exercises continuous movement around the rocky ridge.
 	check(session.commands.issue_move(session.selection.selected, mission.enemy_base) == 5, "long cross-map group order accepted")
 	movement_valid = true
+	group_spacing = INF
 	for tick in range(1400):
 		session.simulate_tick(0.05)
+		group_spacing = minf(group_spacing, minimum_spacing(session.units))
 		for unit in session.selection.selected:
 			movement_valid = movement_valid and session.paths.can_traverse(unit.previous_position, unit.logical_position)
 	arrived = true
 	for unit in session.selection.selected:
 		arrived = arrived and unit.route.is_empty() and unit.logical_position.distance_to(unit.goal) < 0.2
+	check(group_spacing >= 0.999, "army never stacks while crossing the ridge passes")
 	check(movement_valid and arrived, "army crosses ridge and arrives at enemy site using valid continuous paths")
 	scene.free()
+
+func step_units(units: Array[UnitMovement], paths: PathService, config: MissionConfig) -> void:
+	for unit in units:
+		unit.previous_position = unit.logical_position
+	for unit in units:
+		unit.tick(0.05, paths, units, config)
+
+func minimum_spacing(units: Array[UnitMovement]) -> float:
+	var ratio := INF
+	for i in range(units.size()):
+		for j in range(i + 1, units.size()):
+			var a := units[i]
+			var b := units[j]
+			# Minimum over the whole render interpolation interval, not endpoints only.
+			var relative := Geometry2D.get_closest_point_to_segment(Vector2.ZERO,
+				a.previous_position - b.previous_position, a.logical_position - b.logical_position)
+			ratio = minf(ratio, relative.length() / (a.stats.spacing_radius + b.stats.spacing_radius))
+	return ratio
+
+func test_unit_spacing() -> void:
+	print("SUITE: swept unit spacing, idle yielding and group arrivals")
+	var config := MissionConfig.new()
+	config.size = Vector2i(48, 48)
+	var paths := PathService.new(MapModel.new(config))
+	var iso := IsoProjection.new(Vector2(mission.tile_size))
+	var units: Array[UnitMovement] = []
+	for i in range(4):
+		var unit := UnitMovement.new()
+		unit.configure(i + 1, load("res://data/units/jackal.tres" if i == 0 else "res://data/units/ranger.tres"),
+			Vector2(10.5, 20.5) if i == 0 else Vector2(14.5 + 4 * i, 20.5), iso)
+		units.append(unit)
+	var idle_positions := PackedVector2Array()
+	for unit in units:
+		idle_positions.append(unit.logical_position)
+	units[0].set_route(paths.path(units[0].logical_position, Vector2(35.5, 20.5)))
+	var minimum := INF
+	var yielded := false
+	for tick in range(800):
+		step_units(units, paths, config)
+		minimum = minf(minimum, minimum_spacing(units))
+		for i in range(1, units.size()):
+			yielded = yielded or units[i].logical_position.distance_to(idle_positions[i]) > 0.1
+	print("Idle lane minimum combined-spacing ratio: ", minimum)
+	check(minimum >= 0.8, "unit driven through idle Rangers stays above 80% combined spacing including interpolation")
+	check(minimum >= 0.999, "swept separation preserves full spacing instead of tolerating visible overlap")
+	check(units[0].route.is_empty() and units[0].logical_position.distance_to(units[0].goal) < 0.05, "unit still arrives after passing idle traffic")
+	check(yielded, "idle friendly units visibly step aside for passing traffic")
+	var settled := true
+	for i in range(1, units.size()):
+		settled = settled and not units[i].settling and units[i].logical_position.distance_to(idle_positions[i]) < 0.05
+	check(settled, "idle units settle back after traffic clears")
+	units[0].set_route(paths.path(units[0].logical_position, idle_positions[3]))
+	minimum = INF
+	for tick in range(400):
+		step_units(units, paths, config)
+		minimum = minf(minimum, minimum_spacing(units))
+	check(units[0].route.is_empty() and units[0].logical_position.distance_to(units[0].goal) < 0.05 and minimum >= 0.999, "move into an occupied idle spot arrives without overlap")
+	check(not units[3].settling and units[3].route.is_empty(), "idle friend settles in its new spot when the old one stays occupied")
+	for unit in units:
+		unit.free()
+	units.clear()
+	for i in range(8):
+		var unit := UnitMovement.new()
+		unit.configure(i + 1, load("res://data/units/jackal.tres" if i % 3 == 0 else "res://data/units/ranger.tres"), Vector2(8.5 + (i % 4) * 3, 10.5 + (i / 4) * 4), iso)
+		units.append(unit)
+	var artwork_fits := true
+	for unit in units:
+		# Worst compressed isometric axis: sqrt(2) * half-tile-height.
+		# Bounds include the offset body and shadow, not selection/text overlays.
+		artwork_fits = artwork_fits and unit.stats.spacing_radius * sqrt(2.0) * mission.tile_size.y / 2 >= (28.0 if unit.stats.vehicle else 18.0)
+	check(artwork_fits, "spacing radii conservatively enclose the drawn placeholder bodies and shadows")
+	var commands := CommandController.new(paths, config)
+	check(commands.issue_move(units, Vector2(35.5, 30.5)) == units.size(), "mixed group accepts distinct spaced destinations")
+	minimum = INF
+	for tick in range(1200):
+		step_units(units, paths, config)
+		minimum = minf(minimum, minimum_spacing(units))
+	var arrived := true
+	for unit in units:
+		arrived = arrived and unit.route.is_empty() and unit.logical_position.distance_to(unit.goal) < 0.05
+	print("Group minimum combined-spacing ratio: ", minimum)
+	check(minimum >= 0.999, "group move never stacks units, including render interpolation")
+	check(arrived, "mixed-speed group reaches all assigned destinations without jamming")
+	for unit in units:
+		unit.free()
 
 func _initialize() -> void:
 	# An independent watchdog also catches script errors that interrupt a test.
@@ -375,6 +481,7 @@ func _initialize() -> void:
 func run() -> void:
 	test_gestures()
 	test_paths()
+	test_unit_spacing()
 	test_scene()
 	await test_native_ui()
 	if "--force-failure" in OS.get_cmdline_user_args():
@@ -434,12 +541,13 @@ func test_native_ui() -> void:
 	session.camera.clamp_view()
 	var point := session.unit_screen(ranger)
 	touch(layer, 0, point - Vector2(60, 60), true, 11)
-	touch(layer, 1, point + Vector2(60, 60), true, 11.01)
-	layer.recognizer.advance(11.22)
-	check(session.hud.box_visible and ranger.previewed, "raw two-finger hold previews a box around a unit")
-	touch(layer, 0, point - Vector2(60, 60), false, 11.3)
-	touch(layer, 1, point + Vector2(60, 60), false, 11.31)
-	check(session.selection.selected.has(ranger) and session.marker_left == 0, "raw two-finger lifts commit selection without move orders")
+	layer.recognizer.advance(11.2)
+	check(session.hud.hold_visible and session.hud.hold_progress > 0, "raw hold draws progress ring")
+	layer.recognizer.advance(11.41)
+	drag(layer, 0, point + Vector2(60, 60), 11.45)
+	check(session.hud.box_visible and ranger.previewed, "raw one-finger hold and drag previews a box")
+	touch(layer, 0, point + Vector2(60, 60), false, 11.5)
+	check(session.selection.selected.has(ranger) and session.marker_left == 0 and not session.hud.hold_visible, "raw held drag commits selection without move orders")
 	# A UI touch dragging back to its origin is still cancelled.
 	session.consume({"kind": &"deselect"})
 	var button_point := session.hud.buttons[1].get_global_rect().get_center()
@@ -456,7 +564,7 @@ func test_native_ui() -> void:
 	wide.add_child(wide_scene)
 	var wide_session: GameSession = wide_scene.get_node("MissionZero")
 	wide_session.camera.zoom = Vector2.ONE * 0.1
-	wide_session.camera.position = wide_session.projection.to_iso(Vector2(0, 72))
+	wide_session.camera.position = wide_session.projection.to_iso(Vector2(0, mission.size.y))
 	wide_session.camera.clamp_view()
 	var bounds := wide_session.projection.map_bounds(mission.size).grow(settings.camera_border_margin / wide_session.camera.zoom.x + 0.001)
 	var bounded := true
@@ -489,7 +597,7 @@ func check_cell_coverage(session: GameSession, label: String) -> void:
 				missed += 1
 	print("Coverage: %s — %d viewed, %d missed" % [label, viewed, missed])
 	check(viewed > 0 and missed == 0, label + ": every passable cell can be brought on screen")
-	for corner in [Vector2(0.5, 0.5), Vector2(71.5, 0.5), Vector2(0.5, 71.5), Vector2(71.5, 71.5)]:
+	for corner in [Vector2(0.5, 0.5), Vector2(mission.size.x - 0.5, 0.5), Vector2(0.5, mission.size.y - 0.5), Vector2(mission.size) - Vector2(0.5, 0.5)]:
 		session.camera.position = session.projection.to_iso(corner)
 		session.camera.clamp_view()
 		check(session.get_viewport_rect().has_point(session.camera.world_to_screen(session.projection.to_iso(corner))), label + ": corner " + str(corner))

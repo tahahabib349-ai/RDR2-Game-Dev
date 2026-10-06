@@ -45,7 +45,7 @@ wrapper adds a timeout and rejects script errors or missing result summaries eve
 zero. `game/tools/test.sh --force-failure` intentionally returns 1 to verify this failure path;
 it is a runner diagnostic, not a normal suite failure.
 
-Validated: **98 checks passed, 0 failed** in headless Godot and the rendered desktop runner.
+Validated: **116 checks passed, 0 failed** in headless Godot and the rendered desktop runner.
 Checks cover gesture timing/cancellation, native viewport touch dispatch, UI-origin protection,
 selection, TileMap/projection alignment, AStar paths and blocked/unreachable destinations,
 dynamic route invalidation, mixed-unit group arrivals, no per-tick path rebuilding, 20 Hz
@@ -60,18 +60,20 @@ phone performance or physical gesture-feel measurement.
 | Select one unit | Tap, with a minimum 40 design-pixel picking radius | Left click |
 | Select visible units of that type | Double tap within 0.30 s / 40 px | Double click |
 | Pan | One-finger drag past 20 px; brief inertia | Left drag |
-| Box select | Two fingers still for 0.2 s, then resize with both fingers | Shift + left drag |
-| Zoom | Move two fingers immediately; zoom about their midpoint | Mouse wheel |
-| Deselect | ✕ | ✕ or Esc |
+| Box select | Hold one finger still for 0.4 s, then drag (20 px hold slop) | Shift + left drag, or hold left button 0.4 s then drag |
+| Zoom / two-finger scroll | Pinch or drag two fingers; never selects | Mouse wheel / left drag |
+| Deselect | X (font-safe replacement for ✕) | X or Esc |
 | Select all combat units | All Army (excludes Rig/Gatherer) | All Army |
 | Move selected units | Tap ground; green pulse and temporary order lines | Left click ground |
 
-+ / − buttons also adjust zoom. The box previews in screen space, freezes when the first finger
-lifts, and commits after both lift. An empty box preserves the current selection. Mode stays
-locked through the entire gesture; remaining fingers cannot accidentally move units. Third
-fingers, OS cancellation and focus loss cancel the gesture. UI-origin touches cannot pan or issue
-orders, even if dragged onto the map. HUD touch taps are routed explicitly by the same input
-adapter; mouse/touch emulation is disabled to avoid duplicate commands.
++ / − buttons also adjust zoom, with a **1.0 minimum zoom**. A ring fills beneath the held
+finger; once complete, dragging stretches a box from the hold point. Lift to select; an empty
+box or a hold lifted without dragging leaves selection unchanged. Moving more than 20 px before
+completion pans instead. A second finger cancels the pending tap/box and becomes camera-only
+pinch/scroll; after either finger lifts, the remaining finger cannot issue an order or select.
+Third fingers, OS cancellation and focus loss cancel the sequence. UI-origin touches cannot
+pan or issue orders, even if dragged onto the map. HUD touch taps use the same input adapter;
+mouse/touch emulation is disabled to avoid duplicate commands.
 
 S / A combat commands belong to Phase 2. Control groups 1–4 belong to Phase 6. Their keyboard
 shortcuts are intentionally inactive until the corresponding touch features exist.
@@ -80,31 +82,39 @@ shortcuts are intentionally inactive until the corresponding touch features exis
 
 - `data/gestures.tres`: gesture thresholds, tap radius, inertia, camera zoom limits, marker time,
   button sizes, spacing and camera border margin. Sizes use viewport/design pixels at a 720 px design height.
-- `data/missions/mission_zero.tres`: 72×72 map, 64×32 visual cells, ridge/passes, ore landmarks,
+- `data/missions/mission_zero.tres`: 108×108 map, 64×32 visual cells, ridge/passes, ore landmarks,
   test spawns and movement tuning. Ore is a visual landmark only. Central Pass is a 7-cell
-  opening; East Cut is a 6-cell opening. Coordinates are tunable greybox choices.
+  opening; East Cut is a 6-cell opening. The ridge follows the revised MISSION_ZERO coordinates, half-width 2.0, from the west edge
+  to the south edge. Central Pass (51,54), East Cut (84.5,79); closing both eliminates all base-to-base routes.
 - `data/units/*.tres`: unit IDs, movement speed/spacing, army membership and placeholder colors.
 - `scripts/core`: logical map, sole isometric conversion service, terrain view and mission wiring.
 - `scripts/input`: timestamp-driven recognizer, raw touch/mouse adapter, camera.
 - `scripts/selection`: screen-space picking/selection; no movement decisions.
 - `scripts/commands`: validated move requests and distinct reachable group destinations.
 - `scripts/movement`: shared AStarGrid2D, no corner cutting, continuous waypoint following,
-  lightweight local spacing and stuck/invalid-path recovery.
+  swept unit spacing, idle yielding/settling and stuck/invalid-path recovery.
 
 Simulation runs at a fixed 20 Hz and visuals interpolate previous/current logical positions.
+Unit speeds match the revised UNIT_SYSTEM table (about ×0.7): Ranger 2.3, Jackal 4.2,
+Vanguard 2.6, Gatherer 2.2 and Rig 1.6 cells/s. Spacing radii conservatively enclose body/shadow
+art: Rangers 0.85 cells, vehicles 1.25. Swept checks cover movement and render interpolation,
+so units cannot tunnel through each other. Idle friends step aside, then return to their resting
+spot after traffic clears (or settle in the new spot if a friend now occupies the old one). Group destinations respect combined radii, with 3-cell slot spacing.
+Tests measure full spacing throughout a driven-through-idle lane and a mixed group move,
+including arrival, yielding and settling; the requested 80% minimum is exceeded.
 Terrain and units share the projection; terrain art does not determine walkability. Blocked
 orders resolve to a passable destination; unreachable orders use the reachable partial path.
 Paths are requested on orders or invalid/stuck routes, rather than every tick. The camera clamps
 against the projected map bounds with a tunable **48 design-pixel dark border**. This allows
 all walkable cells, including every edge/corner, to come on screen. Both 1280×720 and 1600×720
-coverage tests view **all 4,945 passable cells at the default 1.5 zoom**, with zero missed cells.
+coverage tests view **all 11,018 passable cells at the default 1.5 zoom**, with zero missed cells.
 Overscroll remains bounded; the camera does not keep the whole viewport inside the diamond.
 
 Landscape in both directions, 1280×720 design resolution, `canvas_items` / `expand` and safe-area
 HUD insets are configured. UI sizes are at least 80×80 design pixels. Tablet physical sizing,
 polished audio/haptics and richer control accessibility remain later-phase work.
 
-## Phone playtest (not yet performed)
+## iPhone retest after the first playtest fixes
 
 Play in iPhone Safari: **https://tahahabib349-ai.github.io/RDR2-Game-Dev/**
 Rotate to landscape. For more screen space, use Safari's Share → Add to Home Screen, then
@@ -126,17 +136,23 @@ game/tools/publish_web.sh
 
 The export helper verifies the exact engine and installs the official 4.6.3 single-threaded
 Web templates, checking the pinned SHA-512 when downloading the archive. Local output is
-`game/export/web/` (ignored). The publish helper replaces the generated site on the dedicated
-`gh-pages` branch using a temporary deployment directory, then pushes it. It never merges source
-into main. Commit source changes before publishing so `source-commit.txt` identifies the build.
-GitHub repository Settings → Pages must use **Deploy from a branch**, **gh-pages**, **/(root)**
-(already configured for this repository). Wait for the Pages deployment to finish, then reload
-Safari; a source PR alone does not republish. For local preview, serve `game/export/web/` with
+`game/export/web/` (ignored). Generated builds are **not committed**. Push your source commit,
+then run the publish helper: it updates only the deployment workflow on `gh-pages` with that
+exact source commit. GitHub Actions installs pinned Godot, runs the full suite, exports the game,
+uploads a Pages artifact and deploys it to the same URL. Watch **Publish Phase 1 Web** under
+GitHub Actions and wait for success before reloading Safari. The workflow deploys a generated Pages artifact with Pages write permission;
+it does not require a repository-settings change.
+The old static files on `gh-pages` are historical and are not updated by this publishing path.
+A source PR alone does not republish. Once the workflow is merged into main, you can also run it
+from GitHub Actions with `gh-pages` as the workflow branch and the desired source commit as
+`build_ref`. First-party GitHub Actions are deployment tools, not game plugins/dependencies.
+For local preview, serve `game/export/web/` with
 `python3 -m http.server 8000 --directory game/export/web` and visit localhost:8000.
 
 Validated in Chromium with an 844×390 mobile viewport: actual Web startup with cross-origin
 isolation disabled, full viewport canvas, portrait prompt and page-gesture cancellation.
-Physical iPhone Safari touch feel, notch handling and performance remain **untested**; native
+The Game Director tested the previous Web build on iPhone Safari; these revised controls and
+movement still need an iPhone retest. Notch handling and sustained performance remain unmeasured; native
 iOS performance testing will need a Mac/signing later. No Android APK is included in this PR.
 The test wrapper uses standard `grep -E`, without a ripgrep dependency.
 
@@ -144,17 +160,19 @@ On the phone, try:
 
 1. Tap a Ranger from slightly beside its artwork, then double tap it. Only visible Rangers
    should join the selection.
-2. Rest two fingers for a beat, stretch the box, then lift them one after the other. Check
-   that the preview is clear and the final selection matches it.
-3. Spread two fingers immediately to zoom, then pause. It must stay zoom, with no box or order.
+2. Hold one finger for 0.4 s, watch the ring fill, drag a box and lift. Then hold and lift
+   without dragging: selection must stay unchanged. A quick drag must pan instead.
+3. Rest two fingers, then pinch and drag together. Only the camera may change; no box or order.
+   Add a second finger during a one-finger box to confirm the box cancels.
 4. Give 20 quick ground taps to a selected army. Look for one green marker per order and units
    spreading into distinct destinations.
 5. Pan and zoom while units are selected. No move order should fire. Drag to each map edge and all four corners; every cell should be visible with a thin dark border.
-6. Try All Army and ✕: the Rig/Gatherer stay out of the army selection; ✕ clears selection.
-7. Send a mixed group through Central Pass and East Cut. Check for obvious jams or clipping.
+6. Try All Army and X: the Rig/Gatherer stay out of the army selection; X clears selection.
+7. Drive a Jackal through idle Rangers: they should step aside, then settle without overlap.
+   Send All Army through Central Pass and East Cut; check that bodies never stack or pass through.
 8. Drag from a HUD button onto the map and back. It must not move units or activate the button.
 9. Rotate between both landscape directions on a notched phone. Portrait should show the rotation prompt;
    buttons must stay clear of the notch/home strip. Try one-handed and two-handed use.
 
-The first priority is whether the 0.2-second pause reliably distinguishes box selection from
-pinching. Do not declare Phase 1's phone acceptance complete until this has been checked.
+The first priorities are whether hold-to-box feels clear and whether units pass idle traffic
+smoothly without overlap. Do not declare Phase 1's phone acceptance complete until this has been checked.

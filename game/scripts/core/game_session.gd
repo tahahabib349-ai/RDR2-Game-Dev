@@ -52,6 +52,10 @@ func consume(event: Dictionary) -> void:
 				if commands.issue_move(selection.selected, destination) > 0:
 					marker_position = projection.to_iso(destination)
 					marker_left = gestures.marker_seconds
+		&"hold_progress":
+			hud.show_hold(event.point, event.progress)
+		&"hold_end":
+			hud.hide_hold()
 		&"box_preview":
 			hud.show_box(event.rect)
 			selection.box(event.rect, unit_screen, true)
@@ -59,6 +63,7 @@ func consume(event: Dictionary) -> void:
 			selection.box(event.rect, unit_screen, false)
 			hud.hide_box()
 		&"cancel":
+			hud.hide_hold()
 			selection.clear_preview()
 			hud.hide_box()
 		&"deselect":
@@ -77,6 +82,8 @@ func _physics_process(delta: float) -> void:
 
 func simulate_tick(delta: float) -> void:
 	tick_count += 1
+	for unit in units:
+		unit.previous_position = unit.logical_position
 	for unit in units:
 		unit.tick(delta, paths, units, mission)
 
