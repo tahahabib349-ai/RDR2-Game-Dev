@@ -2,6 +2,9 @@
 
 Status key: ⬜ not started · 🟡 in progress · ✅ done
 
+> ⏸ **Paused 2026-10-06** by the Game Director to pursue another game. Resume steps: top of
+> `AI_HANDOFF.md`.
+
 The current goal is **Mission Zero must be fun**. Phases 8+ don't start until Phase 6 passes a
 playtest with the Game Director.
 
@@ -24,3 +27,4 @@ Later, not scheduled: competitive multiplayer, then the persistent strategy laye
 
 2026-10-06 · 🔨 Codex: Phase 1 greybox implemented in `game/`; 88 automated checks pass.
 Phase 1 remains in progress until the Game Director completes the physical-phone acceptance test.
+2026-10-06 · 🟣 Claude: second-playtest fixes live (126 checks pass). Project paused; Phase 1 iPhone retest pending on resume.

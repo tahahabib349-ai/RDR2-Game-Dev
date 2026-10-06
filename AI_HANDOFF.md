@@ -3,6 +3,32 @@
 > Every AI updates this file at the end of every task. Newest information at the top of each
 > section. Keep it short and factual.
 
+## ⏸ PROJECT PAUSED (2026-10-06)
+
+The Game Director has **paused this project** to work on another game with a more tangible
+proof-of-fun concept. Nothing is broken or half-finished: `main` is clean, all **126** automated
+checks pass, and the latest build is live at **https://tahahabib349-ai.github.io/RDR2-Game-Dev/**.
+
+**Where it stands:** Phase 0 (design) done; Phase 1 (map, camera, touch controls, selection,
+movement, pathfinding) implemented and through two iPhone playtest rounds. The second round's
+fixes (smooth movement, on-screen spacing, hold-to-box ring delay, single web publisher) are live
+but **not yet retested on the Game Director's iPhone**. Phase 2 (combat) has not started.
+
+**To resume (any AI):**
+1. Read `AGENTS.md`, then this file, then `game/README.md`.
+2. Run `game/tools/setup.sh` (installs pinned Godot 4.6.3 and runs the suite; expect 126 passed).
+3. Ask the Game Director to replay the live link on iPhone and give feedback on movement feel,
+   the hold-to-box gesture and group spacing. Fix findings, then mark Phase 1 ✅ in `ROADMAP.md`.
+4. Optional before Phase 2: a second-opinion review of `game/scripts/movement/unit_movement.gd`
+   (rewritten by 🟣 Claude without an independent reviewer) and of Claude's covering map/speed
+   decision in `docs/MISSION_ZERO.md` (🟢 ChatGPT's area).
+5. Then Phase 2 (combat) per `ROADMAP.md`.
+
+**Open items carried over:** unowned `docs/ART_DIRECTION.md`; enemy first-wave timing on the
+108-cell map to recheck in Phase 5/6; placeholder unit labels overlap in tight groups; publishing
+relies on `.github/workflows/publish-web.yml` existing identically on `main` and `gh-pages`
+(GitHub Pages here only accepts deployments from `gh-pages`).
+
 ## Current build
 
 Playable **Phase 1 greybox** in `game/`, pinned to **Godot 4.6.3 stable, official 7d41c59c4**.
@@ -12,12 +38,12 @@ exercise selection, group movement and differing speeds. This test roster is del
 than Mission Zero's eventual single-Rig opening; no combat, construction, economy, fog or AI.
 
 Run/setup/test instructions and phone checklist: `game/README.md`. Headless and rendered desktop
-runs: **116 passed, 0 failed**; intentional failure diagnostic returned exit code **1**.
+runs: **126 passed, 0 failed**; intentional failure diagnostic returned exit code **1**.
 The Game Director played the previous build on iPhone Safari. The revised controls/movement
 need a fresh phone retest; notch handling and sustained performance remain unmeasured.
 Single-threaded Godot 4.6.3 Web export published at
-**https://tahahabib349-ai.github.io/RDR2-Game-Dev/** via an artifact-based GitHub Actions deployment triggered from `gh-pages` (no build files
-committed by the updated publish helper).
+**https://tahahabib349-ai.github.io/RDR2-Game-Dev/** via an artifact-based GitHub Actions deployment: a push to `main` touching `game/` dispatches
+`publish-web.yml` on `gh-pages`, which tests, exports and deploys (no build files committed).
 Browser startup/layout/page-gesture blocking and real tap/pinch/held-box touch dispatch checked
 in mobile-sized Chromium without special headers; page scale stayed 1. Revised physical iPhone Safari verification remains pending. No Android APK is included in the
 final PR; native iOS export/performance validation still requires Mac/signing.
