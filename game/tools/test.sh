@@ -15,6 +15,6 @@ cat "$_rts_log"
 if [[ $_rts_status -ne 0 ]]; then
     exit "$_rts_status"
 fi
-if rg -q 'SCRIPT ERROR:|^ERROR:|^WARNING:.*leaked' "$_rts_log" || ! rg -q '^Results: [1-9][0-9]* passed, 0 failed$' "$_rts_log"; then
+if grep -Eq 'SCRIPT ERROR:|^ERROR:|^WARNING:.*leaked' "$_rts_log" || ! grep -Eq '^Results: [1-9][0-9]* passed, 0 failed$' "$_rts_log"; then
     exit 1
 fi

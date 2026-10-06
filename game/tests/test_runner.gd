@@ -305,18 +305,21 @@ func test_scene() -> void:
 	var anchor_world := session.camera.screen_to_world(anchor)
 	session.camera.consume({"kind": &"pinch", "previous_point": anchor, "point": anchor, "factor": 1.2})
 	check(session.camera.screen_to_world(anchor).is_equal_approx(anchor_world), "pinch keeps world point under finger midpoint")
-	var within := true
+	var bounded := true
 	for location in [Vector2(-100, -100), Vector2(100, 100), Vector2(0, 72), Vector2(72, 0)]:
 		session.camera.position = session.projection.to_iso(location)
 		session.camera.zoom = Vector2.ONE * 0.1
 		session.camera.clamp_view()
+		var limits := session.projection.map_bounds(mission.size).grow(settings.camera_border_margin / session.camera.zoom.x + 0.001)
 		for point in [Vector2.ZERO, Vector2(session.camera.view_size().x, 0), session.camera.view_size(), Vector2(0, session.camera.view_size().y)]:
-			var logical := session.projection.to_logical(session.camera.screen_to_world(point))
-			within = within and logical.x >= -0.001 and logical.y >= -0.001 and logical.x <= 72.001 and logical.y <= 72.001
-	check(within, "camera corners remain inside diamond at every map edge and minimum zoom")
+			bounded = bounded and limits.has_point(session.camera.screen_to_world(point))
+	check(bounded, "camera overscroll stays within the configured dark border")
+	check_cell_coverage(session, "default 1280x720 map coverage")
 	# Real move order from raw tap, distinct group slots, continuous movement.
 	session.camera.configure(session.projection, mission, settings)
 	session.consume({"kind": &"all_army"})
+	session.camera.position = session.projection.to_iso(Vector2(18, 57))
+	session.camera.clamp_view()
 	var ground := session.camera.world_to_screen(session.projection.to_iso(Vector2(23.5, 54.5)))
 	check(not session.hud.hits_ui(ground), "integration move target is battlefield, not UI")
 	touch(layer, 0, ground, true, 6)
@@ -455,14 +458,38 @@ func test_native_ui() -> void:
 	wide_session.camera.zoom = Vector2.ONE * 0.1
 	wide_session.camera.position = wide_session.projection.to_iso(Vector2(0, 72))
 	wide_session.camera.clamp_view()
-	var within := true
+	var bounds := wide_session.projection.map_bounds(mission.size).grow(settings.camera_border_margin / wide_session.camera.zoom.x + 0.001)
+	var bounded := true
 	for corner in [Vector2.ZERO, Vector2(1600, 0), Vector2(1600, 720), Vector2(0, 720)]:
-		var logical := wide_session.projection.to_logical(wide_session.camera.screen_to_world(corner))
-		within = within and logical.x >= -0.001 and logical.y >= -0.001 and logical.x <= 72.001 and logical.y <= 72.001
-	check(within and wide_session.camera.view_size() == Vector2(1600, 720), "20:9 viewport keeps all four corners inside playable map")
+		bounded = bounded and bounds.has_point(wide_session.camera.screen_to_world(corner))
+	check(bounded and wide_session.camera.view_size() == Vector2(1600, 720), "20:9 camera respects bounded dark border")
+	check_cell_coverage(wide_session, "20:9 default-zoom map coverage")
 	var hud_fit := true
 	for button in wide_session.hud.buttons:
 		hud_fit = hud_fit and wide_session.hud.safe_rect().encloses(button.get_global_rect())
 	check(hud_fit, "wide-phone HUD keeps buttons within viewport")
 	wide.free()
 	scene.free()
+
+func check_cell_coverage(session: GameSession, label: String) -> void:
+	var missed := 0
+	var viewed := 0
+	session.camera.zoom = Vector2.ONE * settings.initial_zoom
+	for y in range(mission.size.y):
+		for x in range(mission.size.x):
+			var cell := Vector2i(x, y)
+			if not session.map.passable(cell):
+				continue
+			var rendered := session.projection.to_iso(Vector2(cell) + Vector2(0.5, 0.5))
+			session.camera.position = rendered
+			session.camera.clamp_view()
+			if session.get_viewport_rect().has_point(session.camera.world_to_screen(rendered)):
+				viewed += 1
+			else:
+				missed += 1
+	print("Coverage: %s — %d viewed, %d missed" % [label, viewed, missed])
+	check(viewed > 0 and missed == 0, label + ": every passable cell can be brought on screen")
+	for corner in [Vector2(0.5, 0.5), Vector2(71.5, 0.5), Vector2(0.5, 71.5), Vector2(71.5, 71.5)]:
+		session.camera.position = session.projection.to_iso(corner)
+		session.camera.clamp_view()
+		check(session.get_viewport_rect().has_point(session.camera.world_to_screen(session.projection.to_iso(corner))), label + ": corner " + str(corner))

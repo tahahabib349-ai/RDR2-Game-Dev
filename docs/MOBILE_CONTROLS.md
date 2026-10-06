@@ -195,7 +195,7 @@ it after playtesting.
 | Pinch | Zoom around the point between the fingers |
 | Zoom range | Closest: a tank fills about 1/10 of the screen height. Furthest: about one base and its surroundings fit on screen. Exact values in data. |
 | Minimap tap/drag | Jump/scrub the camera |
-| Map edges | Camera stops at the map border with a soft bounce, never showing beyond it |
+| Map edges | Camera stops at the map border with a soft bounce and a small dark presentation margin; every walkable cell, edge and corner can be brought on screen |
 | Base button (in menu or double-tap minimap) | Centre on the Field Command |
 | Alert tap (Phase 5+) | Tapping "Base under attack!" jumps the camera to the fight |
 

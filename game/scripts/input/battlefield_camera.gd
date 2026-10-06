@@ -25,16 +25,19 @@ func world_to_screen(point: Vector2) -> Vector2:
 	return (point - position) * zoom.x + view_size() * 0.5
 
 func minimum_zoom() -> float:
-	# The full viewport must fit INSIDE the diamond, even on a wide phone.
-	return maxf(config.min_zoom, (view_size().x / projection.tile_size.x + view_size().y / projection.tile_size.y) / mini(mission.size.x, mission.size.y))
+	var bounds := projection.map_bounds(mission.size)
+	var usable := (view_size() - Vector2.ONE * config.camera_border_margin * 2).max(Vector2.ONE)
+	return maxf(config.min_zoom, maxf(usable.x / bounds.size.x, usable.y / bounds.size.y))
 
 func clamp_view() -> void:
 	zoom = Vector2.ONE * clampf(zoom.x, minimum_zoom(), maxf(config.max_zoom, minimum_zoom()))
-	var margin := projection.viewport_margin(view_size(), zoom.x)
-	var logical := projection.to_logical(position)
-	logical.x = clampf(logical.x, margin, mission.size.x - margin)
-	logical.y = clampf(logical.y, margin, mission.size.y - margin)
-	position = projection.to_iso(logical)
+	# Clamp against the projected map bounds, not an inset logical diamond. The
+	# latter permanently hides walkable strips and all four tips of the map.
+	# A small design-pixel border leaves edge units clear of the screen boundary.
+	var bounds := projection.map_bounds(mission.size).grow(config.camera_border_margin / zoom.x)
+	var half_view := view_size() * 0.5 / zoom.x
+	position.x = clampf(position.x, bounds.position.x + half_view.x, bounds.end.x - half_view.x)
+	position.y = clampf(position.y, bounds.position.y + half_view.y, bounds.end.y - half_view.y)
 	force_update_scroll()
 
 func consume(event: Dictionary) -> void:

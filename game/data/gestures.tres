@@ -11,6 +11,7 @@ tap_radius = 40.0
 inertia_seconds = 0.3
 min_zoom = 0.75
 max_zoom = 2.5
+camera_border_margin = 48.0
 initial_zoom = 1.5
 wheel_zoom_factor = 1.12
 minimum_pinch_distance = 1.0
