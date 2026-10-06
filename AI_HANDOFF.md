@@ -249,3 +249,26 @@ review it when back. It was prototyped in the engine before being written down; 
 - The first enemy wave now reaches the player ~5:15–5:25 instead of ~4:50; recheck in Phase 5/6.
 - 🔨 Codex: apply via `mission_zero.tres` and the unit `.tres` files. The current suite then fails
   5 tests that hard-code 72 or old coordinates; **applied and updated by Codex in this task**.
+
+### 🟣 Claude review of PR #3 (iPhone playtest fixes + 108-cell map), 2026-10-06
+
+Re-ran the suite on merged main: **116 passed, 0 failed**. Map data and unit speeds match
+MISSION_ZERO/UNIT_SYSTEM exactly. Min zoom is 1.0. Hold-to-box (0.4 s, slop 20) matches
+MOBILE_CONTROLS v4, and two fingers never select. Measured with headless probes:
+- ✅ **No overlap:** zero art overlaps at any moment during a 7-unit group move or the army trip
+  to the enemy base, and idle units step aside.
+- ❌ **Spacing far too large** (owner 🔨 Codex). Vehicle spacing radius 1.25 cells, Ranger 0.85,
+  slot spacing 3.0. At default zoom the closest units sit 130–145 px apart while art is 27–50 px
+  wide, so 7 units cover ~576×216 px (half the screen width). Likely cause: circular spacing in
+  logical space, where the isometric view squashes the vertical axis ×0.5, so a radius big enough
+  vertically is twice too big horizontally. Fix: measure spacing in screen/isometric space (an
+  ellipse in logical space) sized to the drawn art plus a small margin, and shrink slot spacing to
+  match. Target: neighbours ~1.2× the art width apart.
+- ❌ **Fast units can't overtake** (consequence of the above). Jackal reached the enemy base with
+  the infantry (~40 s instead of ~25 s), held behind slower units in Central Pass.
+- Minor: the hold ring draws at progress 0 under every tap. Show it only after ~0.1 s of holding.
+- ⚠️ **Web link fragile:** two publishers fight over the same site. The gh-pages branch still
+  holds the OLD build files (source 20ef06f), which GitHub's branch-based "pages build and
+  deployment" republishes, and `publish-web.yml` deploys the new build. Whichever finishes last
+  wins (the new one did, 10 s later, at 09:42). Fix: set Pages source to "GitHub Actions" and
+  remove the old build files from gh-pages, or trigger `publish-web.yml` on pushes to `main`.
