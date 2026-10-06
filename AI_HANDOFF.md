@@ -16,8 +16,8 @@ runs: **98 passed, 0 failed**; intentional failure diagnostic returned exit code
 Physical-phone gesture feel, safe-area behaviour and performance have **not** been validated.
 Single-threaded Godot 4.6.3 Web export published at
 **https://tahahabib349-ai.github.io/RDR2-Game-Dev/** via the dedicated `gh-pages` branch.
-Browser startup/layout/page-gesture blocking checked in mobile-sized Chromium without special
-headers. Physical iPhone Safari verification remains pending. No Android APK is included in the
+Browser startup/layout/page-gesture blocking and real tap/pinch/held-box touch dispatch checked
+in mobile-sized Chromium without special headers; page scale stayed 1. Physical iPhone Safari verification remains pending. No Android APK is included in the
 final PR; native iOS export/performance validation still requires Mac/signing.
 
 ## Phase
