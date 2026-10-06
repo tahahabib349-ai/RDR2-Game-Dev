@@ -5,15 +5,35 @@
 
 ## Current build
 
-No game build yet. The repository now contains the Phase 0 game-design and technical-architecture
-blueprint and the mobile controls design (`docs/MOBILE_CONTROLS.md`), plus project
-documents/reference skills.
+Playable **Phase 1 greybox** in `game/`, pinned to **Godot 4.6.3 stable, official 7d41c59c4**.
+Breakpoint Valley: 72×72 logical cells, 64×32 isometric TileMapLayer, blocked rocky ridge,
+Central Pass/East Cut and visual-only ore/base landmarks. Seven labelled placeholder units
+exercise selection, group movement and differing speeds. This test roster is deliberately more
+than Mission Zero's eventual single-Rig opening; no combat, construction, economy, fog or AI.
+
+Run/setup/test instructions and phone checklist: `game/README.md`. Headless and rendered desktop
+runs: **88 passed, 0 failed**; intentional failure diagnostic returned exit code **1**.
+Physical-phone gesture feel, safe-area behaviour and performance have **not** been validated.
+No Android/iOS export artifact was produced.
 
 ## Phase
 
-**Phase 0 — Blueprint** (in progress). See `ROADMAP.md`.
+**Phase 1 — Battlefield and movement** implemented; awaiting physical-phone acceptance.
+The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See `ROADMAP.md`.
 
 ## Completed work
+
+- 2026-10-06 · 🔨 Codex · Implemented Phase 1 only: Godot project/scenes, Resource-based
+  gesture/map/unit data, logical-to-isometric conversion, greybox terrain, shared AStarGrid2D,
+  distinct group slots, local spacing/re-path recovery, fixed 20 Hz movement and visual interpolation.
+  One raw input adapter produces selection/camera/command intents for touch and desktop.
+  Includes tap/double-tap, two-finger held box vs immediate pinch, UI-origin/cancel protection,
+  ✕, All Army, move markers, camera limits/inertia/anchored zoom, landscape-only canvas_items/expand
+  and safe-area HUD. Godot GUI touch buttons are explicitly routed without mouse emulation.
+- 2026-10-06 · 🔨 Codex · Verified 88 checks in both headless and software-OpenGL desktop runners;
+  inspected rendered greybox screenshots. Tested exact-version setup's download branch against
+  official pinned SHA-512, repeat setup, and nonzero runner failure exit. Godot installed under
+  `/workspace/.tools/godot-4.6.3`; writable cache/data/config live under `/workspace/.runtime/godot`.
 
 - 2026-10-06 · 🟣 Claude · `docs/MOBILE_CONTROLS.md` draft v2: aligned with ChatGPT's blueprint
   (2D isometric, Pioneer Rig/Field Command/Gatherer names, one construction queue, 5-item
@@ -40,13 +60,22 @@ documents/reference skills.
 
 | Task | Owner | Status |
 |---|---|---|
+| Phase 1 battlefield/movement/controls | 🔨 Codex | ✅ Implemented; 88 checks pass; phone acceptance pending |
+| Phase 1 phone playtest | Game Director, with 🔨 Codex preparing deployment/fixes | Not performed; no mobile export yet |
 | Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | ✅ Complete; awaiting Game Director review |
-| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v2 complete; all §16 questions answered; awaiting Game Director approval |
+| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v3 complete; Phase 1 subset implemented per Game Director request |
 | `docs/ART_DIRECTION.md` | Unassigned (proposed: 🟢 ChatGPT, with 🟣 Claude for UI visuals) | Not started |
 
 ## Next recommended task
 
-Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md`. Then 🔨 Codex starts Phase 1, following `MOBILE_CONTROLS.md` §14 "Phase 1" for controls.
+🔨 Codex: prepare an Android test export when a target device is chosen, then address Phase 1
+phone-playtest findings before combat. The Game Director should especially check held two-finger
+box selection vs immediate pinch, quick move orders, pan-with-selection, unit crowding and notches.
+
+Suggested next Codex prompt: "Read AGENTS.md, AI_HANDOFF.md and game/README.md. Prepare a debug
+Android test APK for the existing Phase 1 project using the pinned Godot 4.6.3 release. Keep gameplay
+scope unchanged, validate the export honestly, and record deployment/toolchain requirements."
+Phase 2 is not started or authorized by this task.
 
 ## Architectural decisions
 
@@ -54,11 +83,11 @@ Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md`. Then
   still draw the selection box** (two fingers moving at once = pinch zoom); **landscape only**; building placement uses
   small, calm ✓/✕ confirm buttons; smallest checked screen ~5.5", tablets show more battlefield
   rather than bigger buttons.
-- Controls (proposed in `docs/MOBILE_CONTROLS.md`, pending approval): 1280×720 design
+- Phase 1 controls (implemented per the Game Director's request): 1280×720 design
   resolution; orders fire on finger up;
   gesture thresholds live in a data file; one input layer turns touch/mouse into intents (Tap,
   DoubleTap, Pan, TwoFingerBox, Pinch) that feed Selection/Commands.
-- Engine: Godot 4.x with GDScript; pin one exact stable Godot 4.x release when Phase 1 starts.
+- Engine: **Godot 4.6.3 stable official 7d41c59c4**, GDScript; full pin in `game/GODOT_VERSION`.
 - Targets: Android and iOS; desktop builds for development/testing.
 - Presentation: modern 2D isometric / 2.5D visual treatment on a 2D simulation; gameplay uses logical orthogonal square-grid coordinates.
 - Mission Zero map baseline: 72 x 72 cells.
@@ -78,12 +107,19 @@ Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md`. Then
 
 ## Known issues
 
-- Blueprint numbers are explicitly tunable starting values and have not been validated in a playable
-  build yet.
-- Two-finger box select vs pinch zoom is told apart only by whether the fingers pause first
-  (0.2 s). Untested; it's the first thing to try by hand in Phase 1. Fallback: a "box" button.
+- Blueprint balance numbers remain tunable starting values; only movement is implemented/tested.
+- The 0.2 s box-vs-pinch rule is covered by automated tests, but physical-phone feel is untested.
+  A dedicated box button remains a fallback if playtests show the gesture is unreliable.
+- Headless tests exercise viewport touch events and safe-area math; they do not prove real-device
+  rotation/notch handling, sustained FPS, thermals or 100-unit performance.
+- Android/iOS export templates/toolchains and signing are not prepared. iOS needs macOS.
+- Placeholder unit labels/art and simple local spacing need playtesting; no polished audio,
+  haptics, tablet physical sizing or later-phase control groups/combat shortcuts are included.
 
 ## Recently modified files
+
+- 2026-10-06 · 🔨 Codex: `game/` project, scenes, scripts, `.tres` data, headless runner, pinned
+  setup/test scripts and README; `AI_HANDOFF.md`, `ROADMAP.md`.
 
 - 2026-10-06: `docs/MOBILE_CONTROLS.md` (v3, two-finger box select), `AI_HANDOFF.md` (🟣 Claude)
 - 2026-10-06: `docs/TECHNICAL_ARCHITECTURE.md` (modern isometric direction + hardware baseline)
@@ -98,10 +134,11 @@ Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md`. Then
 
 ## Important warnings
 
-- Godot is not preinstalled in cloud AI environments. Codex should install/use a pinned Godot 4.x
-  headless-capable binary or setup script before claiming tests pass.
-- Do not start Phase 1 implementation until the Game Director approves the architecture and
-  `docs/MOBILE_CONTROLS.md`.
+- Source `game/tools/env.sh` before direct Godot invocations in cloud tasks; use
+  `game/tools/setup.sh` for exact-version installation/import/tests. Do not silently float versions.
+- Use the existing isolated checkout, without a worktree unless explicitly requested.
+- The Game Director's Phase 1 implementation request supplies authorization for that scope;
+  it does not authorize combat, construction or economy.
 - `TECHNICAL_ARCHITECTURE.md` does not set a UI design resolution; `MOBILE_CONTROLS.md` §2 uses
   1280×720 landscape (stretch mode `canvas_items`, aspect `expand`).
 - Keep the first implementation simple: no multiplayer, progression, monetization, ECS framework,

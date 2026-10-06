@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/data/unit_stats.gd" id="1"]
+[resource]
+script = ExtResource("1")
+type_id = &"ranger"
+display_name = "Ranger"
+speed = 3.3
+spacing_radius = 0.22
+army = true
+vehicle = false
+color = Color(0.4, 0.85, 0.85, 1)

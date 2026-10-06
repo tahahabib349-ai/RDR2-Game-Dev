@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="GestureConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/data/gesture_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+tap_slop = 20.0
+box_hold_seconds = 0.2
+box_hold_slop = 15.0
+double_tap_seconds = 0.3
+double_tap_distance = 40.0
+tap_radius = 40.0
+inertia_seconds = 0.3
+min_zoom = 0.75
+max_zoom = 2.5
+initial_zoom = 1.5
+wheel_zoom_factor = 1.12
+minimum_pinch_distance = 1.0
+marker_seconds = 1.0
+button_size = 80.0
+ui_gap = 12.0
