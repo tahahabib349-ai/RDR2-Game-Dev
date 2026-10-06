@@ -1,6 +1,6 @@
 # MOBILE_CONTROLS
 
-> Owner: 🟣 Claude (UI/UX). Status: **Draft v1, awaiting Game Director approval.**
+> Owner: 🟣 Claude (UI/UX). Status: **Draft v2, awaiting Game Director approval.** v2 aligns names and rules with 🟢 ChatGPT's Phase 0 blueprint (2D isometric, Pioneer Rig, Field Command, etc.).
 > Covers how the player commands the game by touch: selection, move/attack, camera, zoom,
 > building placement, production, and army control. It describes *what the player does and
 > sees*, not how the code is structured (that is 🟢 ChatGPT's `TECHNICAL_ARCHITECTURE.md` and
@@ -32,7 +32,7 @@
 | Orientation | Layout | **Landscape only** (both landscape directions allowed). ✅ Confirmed by Game Director 2026-10-06 |
 | Smallest supported screen | Button and tap sizes | ~5.5" phone, 16:9 up to 20:9 aspect. Layout adapts automatically; this only sets the smallest screen we check for cramping. ✅ Default accepted |
 | Design resolution | All pixel sizes in this doc | **1280 × 720** (scaled to the real screen, extra width revealed, never cropped) |
-| 2D or 3D, camera angle | How taps find units, how zoom works | **Undecided** (🟢 architecture doc). This doc works for both; see §12. |
+| 2D or 3D, camera angle | How taps find units, how zoom works | ✅ **2D isometric** with a fixed camera angle (`TECHNICAL_ARCHITECTURE.md`); see §12 |
 
 All sizes below are in **design pixels at 720 px screen height** and scale with the screen.
 
@@ -68,7 +68,7 @@ Codex can do this by raising the design resolution on screens larger than about 
 - **Selection panel** (bottom-left): what's selected (portrait, or icons with counts), the
   Deselect ✕ button, control-group buttons, and Select-All-Army.
 - **Command buttons** (just right of the selection panel, only shown when something able to use
-  them is selected): Attack-Move, Stop, and context buttons such as Deploy for the MCV.
+  them is selected): Attack-Move, Stop, and context buttons such as Deploy for the Pioneer Rig.
 - **Safe area:** everything is inset from notches, rounded corners and the home-indicator
   strip. On wide phones the extra width goes to the battlefield, not to stretched panels.
 - UI that blocks the battlefield is minimal: about 20% of the screen with the sidebar open,
@@ -84,10 +84,11 @@ which matches iOS and Android guidance). Primary buttons (sidebar icons, Attack-
 |---|---|---|---|
 | **Tap own unit** | Select it | Replace selection with it | Select it |
 | **Double-tap own unit** | Select all of that type visible on screen | Same | Same |
-| **Tap own building** | Select building | Select building (drops units) | Select that building |
+| **Tap own building** | Select building | Gatherers + Ore Works: **unload there**; otherwise select the building (drops units) | Select that building |
 | **Tap empty ground** | Nothing | **Move** there | Production building: **set rally point**; others: nothing |
 | **Tap enemy unit/building** | Show its info (name, health) | **Attack** it | Nothing |
-| **Tap resource field** | Show info | Harvesters: **harvest there**; others: move there | Refinery/factory: rally there |
+| **Tap Flux Ore field** | Show info | Gatherers: **harvest there**; others: move there | Production building: rally there |
+| **Tap into unexplored shroud** | Nothing | **Move** there (scouting) | Production building: rally there |
 | **One-finger drag** | Pan camera | Pan camera | Pan camera |
 | **Long-press (0.35 s) then drag** | **Box select** | Box select (replaces) | Box select |
 | **Long-press, no drag** | Nothing (cancels) | Nothing | Nothing |
@@ -145,9 +146,9 @@ instant.
 | Attack | Tap enemy | Red ring flashes on the target; attackers face it |
 | **Attack-Move** | Press ⚔ then tap ground | Red marker; units fight anything they meet on the way |
 | Stop | Press ■ | Units halt; small "stop" icon over them |
-| Deploy MCV | Select MCV → **Deploy** button (or double-tap the selected MCV) | Building footprint preview; deploy refused (red flash plus message) if the spot is blocked |
-| Harvest | Select harvester → tap resource field | Field outline flashes |
-| Rally point | Select factory/barracks → tap ground | Flag icon plus a dashed line from the building |
+| Deploy Pioneer Rig | Select Pioneer Rig → **Deploy** button | Field Command footprint preview; deploy refused (red flash plus message) if the spot is blocked. Deploying is permanent in Mission Zero, so the Deploy button shows the footprint first and needs one more tap to confirm |
+| Harvest | Select Gatherer → tap Flux Ore field (or own Ore Works to unload) | Field / building outline flashes |
+| Rally point | Select Infantry Depot / Vehicle Foundry → tap ground | Flag icon plus a dashed line from the building |
 
 **Group moves:** when a group moves, units spread around the tapped point instead of all
 fighting for the same spot. Formation rules are 🔨 Codex/🟢 ChatGPT territory; from the
@@ -165,7 +166,7 @@ selection and on order confirm (with a setting to turn it off) comes in Phase 7.
 
 ## 7. Army control
 
-- **Select All Army** button: selects every combat unit (never harvesters or the MCV).
+- **Select All Army** button: selects every combat unit (never Gatherers or the Pioneer Rig).
 - **Control groups 1–4** (buttons in the selection panel):
   - **Long-press a group button** → saves the current selection to it (the button flashes and
     shows the count).
@@ -186,7 +187,7 @@ it after playtesting.
 | Zoom range | Closest: a tank fills about 1/10 of the screen height. Furthest: about one base and its surroundings fit on screen. Exact values in data. |
 | Minimap tap/drag | Jump/scrub the camera |
 | Map edges | Camera stops at the map border with a soft bounce, never showing beyond it |
-| Base button (in menu or double-tap minimap) | Centre on the Construction HQ |
+| Base button (in menu or double-tap minimap) | Centre on the Field Command |
 | Alert tap (Phase 5+) | Tapping "Base under attack!" jumps the camera to the fight |
 
 No edge-scrolling (scrolling when the finger nears the screen edge) during normal play,
@@ -198,8 +199,10 @@ The flow is "build first, place when ready", the classic base-building rhythm:
 
 1. **Tap a building icon** in the sidebar → construction starts. The icon shows a progress
    sweep, and credits are spent over time.
-   - Tap it again while building → nothing. To pause or cancel, **long-press** the icon, which
-     opens Pause/Cancel buttons (refund rules belong to `ECONOMY.md`).
+   - Tap it again while building → nothing. To cancel, **long-press** the icon, which opens a
+     small Cancel button (75% refund per `ECONOMY.md`). No pause in Mission Zero.
+   - The Field Command has **one construction queue**, so only one building is in progress or
+     waiting to be placed at a time (`BUILDING_SYSTEM.md`).
    - Only one building constructs at a time per sidebar (classic rule; 🟢 to confirm in
      `BUILDING_SYSTEM.md`).
 2. Finished → the icon shows **READY** and glows.
@@ -220,17 +223,17 @@ The flow is "build first, place when ready", the classic base-building rhythm:
 4. Placed → the building appears with a short build-up animation, and the sidebar icon returns
    to normal.
 
-**Why ✓/✕ instead of "tap to place":** a single stray tap that drops a power plant in the wrong
+**Why ✓/✕ instead of "tap to place":** a single stray tap that drops a Grid Plant in the wrong
 spot is the most frustrating mistake on mobile, and it can't be undone. Confirming costs one
 extra tap and prevents it.
 
 ## 10. Production (infantry and vehicles)
 
-- **Tap a unit icon** → adds one to that factory's queue. A small number badge shows how many
+- **Tap a unit icon** → adds one to that building's queue (Infantry Depot or Vehicle Foundry). A small number badge shows how many
   are queued.
-- **Tap again** → queues another (cap set in data; 5 per type to start).
-- **Long-press a queued icon** → removes one from the queue (refund per `ECONOMY.md`).
-- Units go to the factory's **rally point** if one is set, or just outside the door otherwise.
+- **Tap again** → queues another (cap set in data; 5 items per production building, per `BUILDING_SYSTEM.md`). Credits are taken when queued.
+- **Long-press a queued icon** → removes one from the queue (100% refund if not started, 75% if started, per `ECONOMY.md`).
+- Units go to the building's **rally point** if one is set, or just outside the door otherwise.
 - When a sidebar tab has something ready or idle, its tab shows a small dot, so the player
   notices without opening it.
 
@@ -244,19 +247,23 @@ extra tap and prevents it.
 - Building placement needs ✓ to confirm, and queue cancel needs a long-press.
 - The pause menu pauses the game in single-player, so the player can think and read.
 
-## 12. What changes depending on 2D vs 3D (for 🟢 ChatGPT / 🔨 Codex)
+## 12. Notes for 2D isometric (for 🔨 Codex)
 
-The player-facing rules above stay the same either way. The differences are internal:
-- **Finding what was tapped:** 2D checks the point under the finger; 3D casts a ray from the
-  camera. Both must apply the minimum 40 px *screen-space* tap radius from §5.
-- **Zoom:** 2D changes the camera zoom; 3D moves the camera lower or higher (fixed angle, no
-  rotation in Mission Zero). Camera rotation is **not** recommended. It adds a control the
-  player must manage and makes the minimap harder to read.
-- **Box select:** in 3D, a unit is inside the box if its on-screen position is inside it.
-
-**Recommendation to the architect (not a decision):** turn raw touches into a small set of
-"intents" (Tap, DoubleTap, LongPressDrag, Pan, Pinch) in one input layer. Then gameplay code
-never reads raw touch events, and desktop mouse controls (§13) can produce the same intents.
+The architecture chose a 2D simulation on a square logical grid, drawn isometrically. For controls
+that means:
+- **Finding what was tapped:** convert the screen point to world space and pick the nearest
+  candidate using the rules in §5, with the minimum 40 px *screen-space* tap radius. Tall sprites
+  (buildings, tanks) should also be tappable on their drawn body, not only their ground cell.
+- **Zoom:** camera zoom only. The camera angle is fixed and there is no rotation. Rotation would
+  add a control to manage and make the minimap harder to read.
+- **Box select:** the box is drawn in screen space, and a unit is inside it if its on-screen
+  position is inside it (not a box on the logical grid).
+- **Placement ghost:** snaps to logical grid cells and is drawn as isometric diamonds, so
+  green/red cells match what the player sees.
+- **Input layer:** turn raw touches into a small set of intents (Tap, DoubleTap, LongPressDrag,
+  Pan, Pinch) in one place. Selection and Commands (`TECHNICAL_ARCHITECTURE.md` "System
+  boundaries") consume intents and never read raw touch, so desktop mouse controls (§13) produce
+  the same intents.
 
 ## 13. Desktop controls (development and testing only)
 
@@ -283,8 +290,8 @@ features that touch lacks.
 |---|---|
 | **1** Battlefield & movement | Tap select, double-tap select-type, long-press box select, ✕ deselect, Select All Army, tap-to-move with marker, one/two-finger pan, pinch zoom, map-edge limits, forgiving tap radius, desktop mapping, thresholds in a data file |
 | **2** Combat | Tap enemy to attack, Attack-Move, Stop, health bar visibility rules, attack feedback |
-| **3** Base construction | MCV Deploy, sidebar with build/READY/place flow, ✓/✕ placement, production queues, rally points |
-| **4** Economy | Harvester tap-to-harvest, credits/power in the top bar |
+| **3** Base construction | Pioneer Rig Deploy, sidebar with build/READY/place flow, ✓/✕ placement, production queues, rally points |
+| **4** Economy | Gatherer tap-to-harvest / tap-to-unload, credits/power in the top bar |
 | **5** Enemy AI | Alerts and tap-alert-to-jump |
 | **6** Mission Zero | Minimap, control groups 1–4, base button |
 | **7** Polish | Add-to-selection gesture, haptics, settings (haptics, left-handed mirrored layout, UI scale), tuning from playtests |

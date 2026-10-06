@@ -6,7 +6,8 @@
 ## Current build
 
 No game build yet. The repository now contains the Phase 0 game-design and technical-architecture
-blueprint plus project documents/reference skills. Mobile controls remain pending.
+blueprint and the mobile controls design (`docs/MOBILE_CONTROLS.md`), plus project
+documents/reference skills.
 
 ## Phase
 
@@ -14,6 +15,12 @@ blueprint plus project documents/reference skills. Mobile controls remain pendin
 
 ## Completed work
 
+- 2026-10-06 · 🟣 Claude · `docs/MOBILE_CONTROLS.md` draft v2: aligned with ChatGPT's blueprint
+  (2D isometric, Pioneer Rig/Field Command/Gatherer names, one construction queue, 5-item
+  production queues, refund rules, Gatherer unload orders); recorded the Game Director's
+  landscape-only and ✓/✕ placement decisions. (v1 was written earlier the same day: layout,
+  gestures, tap targets, orders/feedback, control groups, camera, placement, production,
+  accidental-input protection, desktop test controls, per-phase rollout, test plan.)
 - 2026-10-06 · 🟢 ChatGPT + Game Director · Confirmed Mission Zero direction: Pioneer Rig remains
   permanently deployed after becoming Field Command; no repair/engineer system in the first
   Mission Zero build; target hardware is iPhone 11/A13-class or better with roughly Snapdragon
@@ -34,14 +41,13 @@ blueprint plus project documents/reference skills. Mobile controls remain pendin
 | Task | Owner | Status |
 |---|---|---|
 | Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | ✅ Complete; awaiting Game Director review |
-| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | Not started |
+| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v2 complete; awaiting Game Director approval (one open question, §16.3) |
+| `docs/ART_DIRECTION.md` | Unassigned (proposed: 🟢 ChatGPT, with 🟣 Claude for UI visuals) | Not started |
 
 ## Next recommended task
 
-🟣 Claude should create `docs/MOBILE_CONTROLS.md` and reconcile it with the completed blueprint,
-especially tap-vs-drag selection behaviour, camera bounds/zoom, command gestures, placement
-confirmation/cancel, group control and minimum touch-target size. After the Game Director approves
-both Phase 0 workstreams, 🔨 Codex starts Phase 1.
+Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md` (and answers its
+§16.3). Then 🔨 Codex starts Phase 1, following `MOBILE_CONTROLS.md` §14 "Phase 1" for controls.
 
 ## Architectural decisions
 
@@ -76,11 +82,12 @@ both Phase 0 workstreams, 🔨 Codex starts Phase 1.
 
 - Blueprint numbers are explicitly tunable starting values and have not been validated in a playable
   build yet.
-- Mobile control details are not yet specified, so selection/command gesture assumptions must not be
-  hard-coded during Phase 1 before `docs/MOBILE_CONTROLS.md` is approved.
+- `docs/MOBILE_CONTROLS.md` §16.3 (one-finger drag pans vs box-selects) is still open. Keep the
+  gesture mapping in one input layer so it is cheap to swap.
 
 ## Recently modified files
 
+- 2026-10-06: `docs/MOBILE_CONTROLS.md` (v2), `AI_HANDOFF.md` (🟣 Claude)
 - 2026-10-06: `docs/TECHNICAL_ARCHITECTURE.md` (modern isometric direction + hardware baseline)
 - 2026-10-06: `AI_HANDOFF.md` (Game Director decisions recorded)
 - 2026-10-06: `docs/MISSION_ZERO.md`
@@ -96,6 +103,8 @@ both Phase 0 workstreams, 🔨 Codex starts Phase 1.
 - Godot is not preinstalled in cloud AI environments. Codex should install/use a pinned Godot 4.x
   headless-capable binary or setup script before claiming tests pass.
 - Do not start Phase 1 implementation until the Game Director approves the architecture and
-  `docs/MOBILE_CONTROLS.md` settles touch-selection/command behaviour.
+  `docs/MOBILE_CONTROLS.md`.
+- `TECHNICAL_ARCHITECTURE.md` does not set a UI design resolution; `MOBILE_CONTROLS.md` §2 uses
+  1280×720 landscape (stretch mode `canvas_items`, aspect `expand`).
 - Keep the first implementation simple: no multiplayer, progression, monetization, ECS framework,
   general-purpose behaviour tree or third-party addon.
