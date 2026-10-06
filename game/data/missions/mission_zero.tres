@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="MissionConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/data/mission_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+size = Vector2i(72, 72)
+tile_size = Vector2i(64, 32)
+player_start = Vector2(12, 58)
+enemy_base = Vector2(60, 14)
+ore_centers = PackedVector2Array(20, 52, 18, 31, 36, 36, 53, 20)
+ore_radius = 3.0
+ridge = PackedVector2Array(8, 40, 24, 39, 34, 36, 40, 26, 48, 18, 56, 32, 50, 42, 58, 56)
+ridge_half_width = 1.5
+central_pass = Vector2(34, 36)
+central_pass_radius = 3.5
+east_cut = Vector2(50, 42)
+east_cut_radius = 3.0
+spawn_positions = PackedVector2Array(12.5, 58.5, 14.5, 56.5, 16.5, 56.5, 14.5, 59.5, 17.5, 59.5, 19.5, 58.5, 15.5, 62.5)
+spawn_types = PackedStringArray("pioneer_rig", "ranger", "ranger", "ranger", "jackal", "vanguard_tank", "gatherer")
+slot_spacing = 1.5
+separation_strength = 3.0
+stuck_seconds = 2.0
+arrival_distance = 0.03

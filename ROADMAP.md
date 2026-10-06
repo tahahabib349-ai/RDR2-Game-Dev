@@ -8,7 +8,7 @@ playtest with the Game Director.
 | Phase | Name | Main owner | Status | Done when |
 |---|---|---|---|---|
 | 0 | Blueprint | 🟢 ChatGPT (+ 🟣 Claude for controls) | 🟡 | Design docs, architecture and mobile controls are in `docs/` and the Game Director has approved them |
-| 1 | Battlefield, camera, unit selection, movement, pathfinding | 🔨 Codex | ⬜ | On a phone: pan/zoom the map, select one unit or a group, order a move, units path around obstacles |
+| 1 | Battlefield, camera, unit selection, movement, pathfinding | 🔨 Codex | 🟡 | On a phone: pan/zoom the map, select one unit or a group, order a move, units path around obstacles |
 | 2 | Combat | 🔨 Codex | ⬜ | Units attack, projectiles hit, armor matters, units and buildings die; readable on a phone |
 | 3 | Base construction | 🔨 Codex (+ 🟣 Claude for placement UX) | ⬜ | Deploy MCV into HQ, place buildings, build times, power, production queues |
 | 4 | Resource economy | 🔨 Codex | ⬜ | Harvester loop produces credits that limit what you can build |
@@ -21,3 +21,6 @@ playtest with the Game Director.
 
 Later, not scheduled: competitive multiplayer, then the persistent strategy layer. See
 `MASTER_PROJECT_BRIEF.md`.
+
+2026-10-06 · 🔨 Codex: Phase 1 greybox implemented in `game/`; 88 automated checks pass.
+Phase 1 remains in progress until the Game Director completes the physical-phone acceptance test.
