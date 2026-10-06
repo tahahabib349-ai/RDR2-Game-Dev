@@ -43,6 +43,10 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
   remain viewable at default zoom on standard/wide viewports. Full headless/rendered suites:
   116 passed, 0 failed. Single-threaded Web export republished via an artifact upload; no build files committed.
   Publish helper/workflow updated to preserve the same URL without committing generated files.
+  GitHub Actions also ran the full suite/export and successfully deployed the Pages artifact.
+  Uses the dedicated `phase-one-web` deployment environment: the legacy managed `github-pages`
+  environment left the custom publish job waiting despite its allowed branch. Pages settings
+  were left unchanged; direct artifact deployment works with the existing site configuration.
 
 - 2026-10-06 · 🔨 Codex · Fixed Claude's camera review finding: clamp against projected map
   bounds plus a tunable 48 design-pixel dark border. Exhaustive default-zoom tests bring all
