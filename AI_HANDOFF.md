@@ -14,10 +14,11 @@ than Mission Zero's eventual single-Rig opening; no combat, construction, econom
 Run/setup/test instructions and phone checklist: `game/README.md`. Headless and rendered desktop
 runs: **98 passed, 0 failed**; intentional failure diagnostic returned exit code **1**.
 Physical-phone gesture feel, safe-area behaviour and performance have **not** been validated.
-A signed debug Android APK is in `builds/android/breakpoint-valley-phase1-debug.apk` with
-install instructions and SHA-256. ARM64, Android 7+, package `com.tahahabib.breakpointvalley.phase1`,
-version 0.1.1-phase1; signature/alignment/manifest/launcher/landscape/resources verified.
-No physical-device install/run has been performed; no iOS export was produced.
+Single-threaded Godot 4.6.3 Web export published at
+**https://tahahabib349-ai.github.io/RDR2-Game-Dev/** via the dedicated `gh-pages` branch.
+Browser startup/layout/page-gesture blocking checked in mobile-sized Chromium without special
+headers. Physical iPhone Safari verification remains pending. No Android APK is included in the
+final PR; native iOS export/performance validation still requires Mac/signing.
 
 ## Phase
 
@@ -31,11 +32,12 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
   4,945 walkable cells on screen on standard/wide viewports, including four corners; no missed
   cells. Updated the obsolete viewport-inside-diamond tests to enforce bounded overscroll instead.
   Headless and rendered desktop full suites: 98 passed, 0 failed. Corner screenshots inspected.
-- 2026-10-06 · 🔨 Codex · Replaced ripgrep with standard grep -E in the test wrapper; intentional
-  failure still exits 1. Prepared the exact Godot 4.6.3 Android templates with verified SHA-512,
-  Android SDK tools and local debug signing. Added repeatable setup/export scripts, engine-generated
-  Android preset, original placeholder launcher icon, install instructions and a downloadable
-  debug APK. APK signature v2/v3 and 16 KB alignment verified; APK metadata/resources checked.
+- 2026-10-06 · 🔨 Codex · Replaced ripgrep with standard grep -E; intentional failure exits 1.
+  Built the exact 4.6.3 single-threaded Web export and published it to GitHub Pages. Added
+  repeatable template setup/export/publish helpers and an engine-generated Web preset. The
+  stock-derived HTML shell blocks page zoom gestures, fills the landscape viewport, reserves
+  CSS safe-area insets and shows a portrait rotation prompt. Chromium startup/layout checks pass
+  without cross-origin isolation. iPhone Safari must still be checked by the Game Director.
   No gameplay/map-layout scope changes; design-owned ridge/third-route findings remain open.
 
 - 2026-10-06 · 🟣 Claude · Reviewed Phase 1 against `MOBILE_CONTROLS.md` §14/§15 and the
@@ -80,19 +82,18 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
 | Task | Owner | Status |
 |---|---|---|
 | Phase 1 battlefield/movement/controls | 🔨 Codex | ✅ Implemented; 98 checks pass; phone acceptance pending |
-| Phase 1 phone playtest | Game Director, with 🔨 Codex preparing deployment/fixes | Debug Android APK prepared; physical-phone playtest not performed |
+| Phase 1 phone playtest | Game Director, with 🔨 Codex preparing deployment/fixes | Web build live on GitHub Pages; iPhone Safari playtest pending |
 | Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | ✅ Complete; awaiting Game Director review |
 | `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v3 complete; Phase 1 subset implemented per Game Director request |
 | `docs/ART_DIRECTION.md` | Unassigned (proposed: 🟢 ChatGPT, with 🟣 Claude for UI visuals) | Not started |
 
 ## Next recommended task
 
-The Game Director uses an **iPhone**, so the APK cannot be tested on that phone. It is ready for
-an ARM64 Android tester using `builds/android/README.md`. Claude's proposed next task for 🔨 Codex
-is a separate single-threaded Web export for iPhone Safari control-feel testing; it was not built
-or hosted in this Android task. Native iOS/performance testing requires a Mac/signing later.
-Use the Phase 1 checklist in `game/README.md`: every edge/corner, held box vs immediate pinch,
-quick moves, pan-with-selection, crowding and notches. Fix findings before combat.
+The Game Director uses an **iPhone**. Open the Pages link above in Safari, rotate to landscape,
+and optionally Add to Home Screen. Use the checklist in `game/README.md`: every edge/corner,
+held box vs immediate pinch, quick moves, pan-with-selection, crowding and notches. Confirm the
+Safari page stays still during two-finger gestures. Fix findings before combat. Native
+ iOS/performance testing requires a Mac/signing later.
 
 🟢 ChatGPT owns the remaining third-route/ridge-layout design decisions. Copy-paste prompt:
 "Read AGENTS.md, AI_HANDOFF.md Known issues, docs/MISSION_ZERO.md and
@@ -148,16 +149,16 @@ Phase 2 is not started or authorized by this task.
   A dedicated box button remains a fallback if playtests show the gesture is unreliable.
 - Headless tests exercise viewport touch events and safe-area math; they do not prove real-device
   rotation/notch handling, sustained FPS, thermals or 100-unit performance.
-- Android debug export is prepared and statically verified; device runtime testing remains pending.
-  Signing keys/toolchain paths are local only. iOS remains unprepared and requires macOS.
+- Web build runs in mobile-sized Chromium; physical iPhone Safari, notch handling and sustained
+  performance are untested. Browser bars depend on Safari; Add to Home Screen gives more space.
+  Native iOS remains unprepared and requires macOS/signing.
 - Placeholder unit labels/art and simple local spacing need playtesting; no polished audio,
   haptics, tablet physical sizing or later-phase control groups/combat shortcuts are included.
 
 ## Recently modified files
 
 - 2026-10-06 · 🔨 Codex: camera/projection/gesture data and coverage tests; portable test wrapper;
-  Android export preset/setup/export helpers, project export configuration and original icon;
-  `builds/android/` APK/checksum/install guide; `game/README.md`, `AI_HANDOFF.md` and the
+  Web export preset/setup/export/publish helpers, original icon and `game/web/shell.html`; `game/README.md`, `AI_HANDOFF.md` and the
   camera-margin wording in `docs/MOBILE_CONTROLS.md` §8.
 
 - 2026-10-06: `AI_HANDOFF.md` (🟣 Claude Phase 1 review findings)

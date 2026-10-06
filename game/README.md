@@ -106,32 +106,39 @@ polished audio/haptics and richer control accessibility remain later-phase work.
 
 ## Phone playtest (not yet performed)
 
-A signed **debug Android APK** is included in `../builds/android/`, with download/install
-instructions and SHA-256. It supports ARM64 Android 7+ and uses the stock Godot 4.6.3 template;
-it is not an iPhone or store-release build. The signature, 16 KB alignment, manifest, launcher,
-landscape orientation and embedded resources were checked. Physical-phone installation,
-gesture feel, safe-area behaviour and performance are still untested. iOS exports require macOS
-and signing and remain outside this task.
+Play in iPhone Safari: **https://tahahabib349-ai.github.io/RDR2-Game-Dev/**
+Rotate to landscape. For more screen space, use Safari's Share → Add to Home Screen, then
+launch the saved icon. Safari's browser bars may still occupy space when played in a normal tab;
+the canvas fills the available viewport. Portrait shows a rotation prompt. The HTML shell uses
+safe-area insets for the notch/home strip and disables browser pinch/double-tap zoom without
+stopping touch events reaching the game. This is a single-threaded WebGL 2 build, with no
+SharedArrayBuffer, cross-origin isolation headers, plugins or service-worker workaround.
 
-To reproduce the APK from the repository root on Linux x86_64 (Java 17+ and Python 3.11+):
+To rebuild and republish from the repository root on Linux x86_64 (Python 3.11+, Git and GitHub
+push access; run `setup.sh` first on a fresh machine):
 
 ```bash
 game/tools/setup.sh
-game/tools/export_android.sh
+game/tools/export_web.sh
+game/tools/test.sh
+game/tools/publish_web.sh
 ```
 
-The Android helper reuses/prepares command-line tools 19.0, build-tools 36.0.0, platform 36,
-platform-tools and the exact Godot templates. Google bootstrap artifacts and Godot templates
-are checksum-verified; SDK packages are downloaded by Google's SDK manager using its normal
-verification. The Godot 4.6.3 template targets API 36, so build-tools 36 are used even though the
-older 4.6 documentation lists 35. No Gradle, NDK or third-party plugins are needed. Local
-Android/Java editor paths and the debug keystore stay outside the repository. The supplied
-cloud Java 21 runtime was used successfully. The export-only preset has `runnable=false` to
-avoid starting ADB/device polling in cloud tasks; this does not prevent installing/running the APK.
+The export helper verifies the exact engine and installs the official 4.6.3 single-threaded
+Web templates, checking the pinned SHA-512 when downloading the archive. Local output is
+`game/export/web/` (ignored). The publish helper replaces the generated site on the dedicated
+`gh-pages` branch using a temporary deployment directory, then pushes it. It never merges source
+into main. Commit source changes before publishing so `source-commit.txt` identifies the build.
+GitHub repository Settings → Pages must use **Deploy from a branch**, **gh-pages**, **/(root)**
+(already configured for this repository). Wait for the Pages deployment to finish, then reload
+Safari; a source PR alone does not republish. For local preview, serve `game/export/web/` with
+`python3 -m http.server 8000 --directory game/export/web` and visit localhost:8000.
 
-The resulting APK is in `game/export/`. The intentionally committed review APK under
-`builds/android/` is copied separately; exports do not overwrite it. `tools/test.sh` now uses
-standard `grep -E`, without a ripgrep dependency.
+Validated in Chromium with an 844×390 mobile viewport: actual Web startup with cross-origin
+isolation disabled, full viewport canvas, portrait prompt and page-gesture cancellation.
+Physical iPhone Safari touch feel, notch handling and performance remain **untested**; native
+iOS performance testing will need a Mac/signing later. No Android APK is included in this PR.
+The test wrapper uses standard `grep -E`, without a ripgrep dependency.
 
 On the phone, try:
 
@@ -146,7 +153,7 @@ On the phone, try:
 6. Try All Army and ✕: the Rig/Gatherer stay out of the army selection; ✕ clears selection.
 7. Send a mixed group through Central Pass and East Cut. Check for obvious jams or clipping.
 8. Drag from a HUD button onto the map and back. It must not move units or activate the button.
-9. Rotate between both landscape directions on a notched phone. Portrait should stay disabled;
+9. Rotate between both landscape directions on a notched phone. Portrait should show the rotation prompt;
    buttons must stay clear of the notch/home strip. Try one-handed and two-handed use.
 
 The first priority is whether the 0.2-second pause reliably distinguishes box selection from
