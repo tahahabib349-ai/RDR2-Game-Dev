@@ -14,6 +14,11 @@ blueprint plus project documents/reference skills. Mobile controls remain pendin
 
 ## Completed work
 
+- 2026-10-06 · 🟢 ChatGPT + Game Director · Confirmed Mission Zero direction: Pioneer Rig remains
+  permanently deployed after becoming Field Command; no repair/engineer system in the first
+  Mission Zero build; target hardware is iPhone 11/A13-class or better with roughly Snapdragon
+  855-class-or-better Android as the performance floor; 2D isometric architecture retained but
+  visual direction clarified as modern 2.5D-style presentation rather than retro presentation.
 - 2026-10-06 · 🟢 ChatGPT · Completed the Phase 0 blueprint: `docs/MISSION_ZERO.md`,
   `docs/GAME_DESIGN.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`,
   `docs/ECONOMY.md`, and `docs/TECHNICAL_ARCHITECTURE.md`. Defined Mission Zero map/AI,
@@ -42,7 +47,7 @@ both Phase 0 workstreams, 🔨 Codex starts Phase 1.
 
 - Engine: Godot 4.x with GDScript; pin one exact stable Godot 4.x release when Phase 1 starts.
 - Targets: Android and iOS; desktop builds for development/testing.
-- Presentation: 2D isometric; gameplay uses logical orthogonal square-grid coordinates.
+- Presentation: modern 2D isometric / 2.5D visual treatment on a 2D simulation; gameplay uses logical orthogonal square-grid coordinates.
 - Mission Zero map baseline: 72 x 72 cells.
 - Pathfinding: shared `AStarGrid2D` for strategic paths plus lightweight local spacing; do not
   use NavigationServer initially unless profiling/playtests justify a change.
@@ -51,6 +56,8 @@ both Phase 0 workstreams, 🔨 Codex starts Phase 1.
 - Simulation: fixed 20 Hz gameplay tick separated from rendering; fog may update at 5 Hz.
 - Testing: first-party GDScript headless runner with real non-zero failure exit codes; no test plugin.
 - Dependencies: no plugins/add-ons unless the Game Director approves them.
+- Minimum performance class: iPhone 11 / A13 Bionic or better; Android roughly Snapdragon 855 /
+  Adreno 640 class or better. 30 fps is the hard 100-unit stress minimum; 60 fps is preferred.
 
 ## Proposed changes awaiting the Game Director
 
@@ -62,10 +69,11 @@ None.
   build yet.
 - Mobile control details are not yet specified, so selection/command gesture assumptions must not be
   hard-coded during Phase 1 before `docs/MOBILE_CONTROLS.md` is approved.
-- No target device has yet been selected for the 100-unit mid-range-phone performance benchmark.
 
 ## Recently modified files
 
+- 2026-10-06: `docs/TECHNICAL_ARCHITECTURE.md` (modern isometric direction + hardware baseline)
+- 2026-10-06: `AI_HANDOFF.md` (Game Director decisions recorded)
 - 2026-10-06: `docs/MISSION_ZERO.md`
 - 2026-10-06: `docs/GAME_DESIGN.md`
 - 2026-10-06: `docs/UNIT_SYSTEM.md`
