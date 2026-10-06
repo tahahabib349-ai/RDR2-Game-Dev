@@ -49,7 +49,7 @@ func consume(event: Dictionary) -> void:
 		&"tap", &"double_tap":
 			if not selection.tap(event.point, event.kind == &"double_tap", unit_screen, get_viewport_rect()):
 				var destination := projection.to_logical(camera.screen_to_world(event.point))
-				if commands.issue_move(selection.selected, destination) > 0:
+				if commands.issue_move(selection.selected, destination, units) > 0:
 					marker_position = projection.to_iso(destination)
 					marker_left = gestures.marker_seconds
 		&"hold_progress":
@@ -90,7 +90,7 @@ func simulate_tick(delta: float) -> void:
 func _process(delta: float) -> void:
 	marker_left = maxf(0, marker_left - delta)
 	for unit in units:
-		unit.render(Engine.get_physics_interpolation_fraction())
+		unit.render(Engine.get_physics_interpolation_fraction(), delta, mission.visual_smoothing_seconds)
 	queue_redraw()
 
 func _draw() -> void:

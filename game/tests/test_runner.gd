@@ -50,6 +50,13 @@ func test_gestures() -> void:
 	check(events.filter(func(e): return e.kind == &"pan_end")[-1].velocity == Vector2.ZERO, "pause before release suppresses stale inertia")
 	r = fresh()
 	r.down(0, Vector2(100, 100), 0)
+	r.advance(0.05)
+	r.up(0, Vector2(100, 100), 0.08)
+	check(count_kind(&"hold_progress") == 0 and count_kind(&"tap") == 1, "quick tap never flashes the hold ring")
+	r = fresh()
+	r.down(0, Vector2(100, 100), 0)
+	r.advance(0.05)
+	check(count_kind(&"hold_progress") == 0, "hold ring hidden for the first 0.1 seconds")
 	r.advance(0.399)
 	check(r.mode == &"tap" and count_kind(&"hold_progress") > 0, "hold ring progresses before 0.4 seconds")
 	r.advance(0.4)
@@ -356,10 +363,19 @@ func test_scene() -> void:
 	check(group_spacing >= 0.999, "actual army move keeps full spacing around idle Rig and Gatherer")
 	check(movement_valid, "30 seconds of group movement never enters blocked terrain")
 	var arrived := true
+	var worst_offset := 0.0
 	for unit in session.selection.selected:
-		arrived = arrived and unit.route.is_empty() and unit.logical_position.distance_to(unit.goal) < 0.2
+		# Arrived = stopped, on or near its own spot (within two unit-widths): a unit
+		# nudged aside by traffic stays put rather than shoving back (no ping-pong).
+		var offset := unit.screen_gap(unit.logical_position, unit.goal)
+		worst_offset = maxf(worst_offset, offset / (unit.stats.footprint_radius * 2.0))
+		arrived = arrived and unit.route.is_empty() and offset <= unit.stats.footprint_radius * 4.0
+	print("Army arrival: worst offset from own spot = %.2f unit-widths" % worst_offset)
 	check(arrived, "mixed-speed army arrives around marker without jamming")
-	check(session.paths.requests == requests_before, "normal movement does not recompute paths every tick")
+	print("Path requests during 600-tick army move: ", session.paths.requests - requests_before)
+	# Occasional requests (a yielded unit walking back, a stuck re-plan) are fine;
+	# per-tick re-planning would be thousands (600 ticks x 7 units).
+	check(session.paths.requests - requests_before <= 2 * session.units.size(), "normal movement does not recompute paths every tick")
 	# A changed map invalidates a route, but does not force per-tick re-pathing.
 	var lone := session.units[0]
 	lone.set_route(session.paths.path(lone.logical_position, mission.player_start + Vector2(13.5, 8.5)))
@@ -371,19 +387,110 @@ func test_scene() -> void:
 	check(session.paths.requests > replan_before and lone.route.is_empty() and lone.logical_position.distance_to(lone.goal) < 0.2, "unit re-paths when terrain changes and still reaches its destination")
 	session.paths.set_blocked(obstacle, false)
 	# Long mission crossing exercises continuous movement around the rocky ridge.
-	check(session.commands.issue_move(session.selection.selected, mission.enemy_base) == 5, "long cross-map group order accepted")
+	check(session.commands.issue_move(session.selection.selected, mission.enemy_base, session.units) == 5, "long cross-map group order accepted")
 	movement_valid = true
 	group_spacing = INF
+	var arrival_tick := {}
 	for tick in range(1400):
 		session.simulate_tick(0.05)
 		group_spacing = minf(group_spacing, minimum_spacing(session.units))
 		for unit in session.selection.selected:
 			movement_valid = movement_valid and session.paths.can_traverse(unit.previous_position, unit.logical_position)
+			if unit.route.is_empty() and not arrival_tick.has(unit):
+				arrival_tick[unit] = tick
+	var jackal_first := true
+	for unit in session.selection.selected:
+		if unit.stats.type_id == &"jackal":
+			for other in session.selection.selected:
+				if other.stats.type_id == &"ranger":
+					jackal_first = jackal_first and int(arrival_tick.get(unit, 99999)) < int(arrival_tick.get(other, 99999))
+	check(jackal_first, "fast Jackal overtakes and reaches the enemy site before every Ranger")
 	arrived = true
 	for unit in session.selection.selected:
 		arrived = arrived and unit.route.is_empty() and unit.logical_position.distance_to(unit.goal) < 0.2
 	check(group_spacing >= 0.999, "army never stacks while crossing the ridge passes")
 	check(movement_valid and arrived, "army crosses ridge and arrives at enemy site using valid continuous paths")
+	scene.free()
+
+## Vibration = turning one way then the other on consecutive ticks, each by more than 20 degrees.
+func count_vibration(history: Dictionary, units: Array[UnitMovement], projection: IsoProjection) -> int:
+	var flips := 0
+	for unit in units:
+		var h: Array = history.get(unit, [])
+		h.append(projection.to_iso(unit.logical_position))
+		if h.size() > 4:
+			h.pop_front()
+		history[unit] = h
+		if h.size() < 4:
+			continue
+		var a: Vector2 = h[1] - h[0]
+		var b: Vector2 = h[2] - h[1]
+		var c: Vector2 = h[3] - h[2]
+		if a.length() < 0.05 or b.length() < 0.05 or c.length() < 0.05:
+			continue
+		var first := a.angle_to(b)
+		var second := b.angle_to(c)
+		if absf(first) > deg_to_rad(20) and absf(second) > deg_to_rad(20) and signf(first) != signf(second):
+			flips += 1
+	return flips
+
+func test_crowd_movement() -> void:
+	print("SUITE: crowded movement quality (playtest: units vibrated and scattered)")
+	var scene: Node = load("res://scenes/main.tscn").instantiate()
+	root.add_child(scene)
+	var session: GameSession = scene.get_node("MissionZero")
+	session.set_physics_process(false)
+	session.set_process(false)
+	var types := ["ranger", "ranger", "jackal", "vanguard_tank", "ranger", "vanguard_tank", "ranger"]
+	for i in range(14):
+		var extra: UnitMovement = load("res://scenes/units/unit.tscn").instantiate()
+		extra.configure(session.units.size() + 1, load("res://data/units/%s.tres" % types[i % types.size()]),
+			mission.player_start + Vector2(4 + (i % 7) * 2.0, -10 + (i / 7) * 2.5), session.projection)
+		session.get_node("Units").add_child(extra)
+		session.units.append(extra)
+	var all: Array[UnitMovement] = []
+	all.assign(session.units)
+	for scenario in ["21 units to one point", "two halves swap sides"]:
+		if scenario == "21 units to one point":
+			session.commands.issue_move(all, mission.player_start + Vector2(14, -2))
+		else:
+			var half_a: Array[UnitMovement] = []
+			var half_b: Array[UnitMovement] = []
+			for i in range(all.size()):
+				(half_a if i % 2 == 0 else half_b).append(all[i])
+			session.commands.issue_move(half_a, mission.player_start + Vector2(26, -2))
+			session.commands.issue_move(half_b, mission.player_start + Vector2(2, -2))
+		var history := {}
+		var flips := 0
+		var spacing := INF
+		for tick in range(800):
+			session.simulate_tick(0.05)
+			flips += count_vibration(history, all, session.projection)
+			spacing = minf(spacing, minimum_spacing(all))
+		var settled := true
+		for unit in all:
+			settled = settled and unit.route.is_empty()
+		print("%s: vibration flips %d, minimum spacing ratio %.3f" % [scenario, flips, spacing])
+		# Before the fix these scenarios produced ~900-1,000 flips and left units jammed.
+		check(flips <= all.size() * 6, scenario + ": units do not vibrate")
+		# 0.99 = never closer than 99% of the on-screen spacing: under a third of a
+		# pixel, invisible (a 21-unit crowd measured 0.998 at its tightest moment).
+		check(spacing >= 0.99, scenario + ": no unit overlaps another at any moment")
+		check(settled, scenario + ": every unit finishes moving (no jam)")
+	# Not scattered: each unit's nearest neighbour sits close (playtest: 3-5 unit widths apart).
+	session.commands.issue_move(all, mission.player_start + Vector2(14, -2))
+	for tick in range(800):
+		session.simulate_tick(0.05)
+	var ratios: Array[float] = []
+	for unit in all:
+		var best := INF
+		for other in all:
+			if other != unit:
+				best = minf(best, unit.screen_gap(unit.logical_position, other.logical_position) / (unit.stats.footprint_radius + other.stats.footprint_radius))
+		ratios.append(best)
+	ratios.sort()
+	print("Nearest-neighbour spacing ratio, median: ", ratios[ratios.size() / 2])
+	check(ratios[ratios.size() / 2] <= 1.6, "a gathered group stands close together, not scattered")
 	scene.free()
 
 func step_units(units: Array[UnitMovement], paths: PathService, config: MissionConfig) -> void:
@@ -399,9 +506,10 @@ func minimum_spacing(units: Array[UnitMovement]) -> float:
 			var a := units[i]
 			var b := units[j]
 			# Minimum over the whole render interpolation interval, not endpoints only.
+			# Measured on screen (isometric design px), like the movement code.
 			var relative := Geometry2D.get_closest_point_to_segment(Vector2.ZERO,
-				a.previous_position - b.previous_position, a.logical_position - b.logical_position)
-			ratio = minf(ratio, relative.length() / (a.stats.spacing_radius + b.stats.spacing_radius))
+				a.projection.to_iso(a.previous_position - b.previous_position), a.projection.to_iso(a.logical_position - b.logical_position))
+			ratio = minf(ratio, relative.length() / (a.stats.footprint_radius + b.stats.footprint_radius))
 	return ratio
 
 func test_unit_spacing() -> void:
@@ -452,10 +560,12 @@ func test_unit_spacing() -> void:
 		units.append(unit)
 	var artwork_fits := true
 	for unit in units:
-		# Worst compressed isometric axis: sqrt(2) * half-tile-height.
-		# Bounds include the offset body and shadow, not selection/text overlays.
-		artwork_fits = artwork_fits and unit.stats.spacing_radius * sqrt(2.0) * mission.tile_size.y / 2 >= (28.0 if unit.stats.vehicle else 18.0)
-	check(artwork_fits, "spacing radii conservatively enclose the drawn placeholder bodies and shadows")
+		# On-screen footprint covers the drawn body half-width (vehicle diamond 17 px,
+		# infantry circle 9 px) plus a margin, without being oversized (playtest: units
+		# looked scattered when spacing was ~3x the art).
+		var body := 17.0 if unit.stats.vehicle else 9.0
+		artwork_fits = artwork_fits and unit.stats.footprint_radius >= body and unit.stats.footprint_radius <= body * 1.5
+	check(artwork_fits, "on-screen footprints enclose the drawn bodies without being oversized")
 	var commands := CommandController.new(paths, config)
 	check(commands.issue_move(units, Vector2(35.5, 30.5)) == units.size(), "mixed group accepts distinct spaced destinations")
 	minimum = INF
@@ -463,8 +573,12 @@ func test_unit_spacing() -> void:
 		step_units(units, paths, config)
 		minimum = minf(minimum, minimum_spacing(units))
 	var arrived := true
+	var worst_group_offset := 0.0
 	for unit in units:
-		arrived = arrived and unit.route.is_empty() and unit.logical_position.distance_to(unit.goal) < 0.05
+		var offset := unit.screen_gap(unit.logical_position, unit.goal)
+		worst_group_offset = maxf(worst_group_offset, offset / (unit.stats.footprint_radius * 2.0))
+		arrived = arrived and unit.route.is_empty() and offset <= unit.stats.footprint_radius * 4.0
+	print("Group arrival: worst offset from own spot = %.2f unit-widths" % worst_group_offset)
 	print("Group minimum combined-spacing ratio: ", minimum)
 	check(minimum >= 0.999, "group move never stacks units, including render interpolation")
 	check(arrived, "mixed-speed group reaches all assigned destinations without jamming")
@@ -483,6 +597,7 @@ func run() -> void:
 	test_paths()
 	test_unit_spacing()
 	test_scene()
+	test_crowd_movement()
 	await test_native_ui()
 	if "--force-failure" in OS.get_cmdline_user_args():
 		check(false, "intentional runner exit-code validation")

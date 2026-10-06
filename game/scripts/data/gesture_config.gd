@@ -4,6 +4,8 @@ extends Resource
 @export var tap_slop: float = 20.0
 @export var box_hold_seconds: float = 0.4
 @export var box_hold_slop: float = 20.0
+## The hold ring only appears after this long, so quick taps never flash a ring.
+@export var hold_ring_delay: float = 0.1
 @export var double_tap_seconds: float = 0.30
 @export var double_tap_distance: float = 40.0
 @export var tap_radius: float = 40.0

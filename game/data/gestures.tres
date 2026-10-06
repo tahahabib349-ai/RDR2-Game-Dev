@@ -5,6 +5,7 @@ script = ExtResource("1")
 tap_slop = 20.0
 box_hold_seconds = 0.4
 box_hold_slop = 20.0
+hold_ring_delay = 0.1
 double_tap_seconds = 0.3
 double_tap_distance = 40.0
 tap_radius = 40.0

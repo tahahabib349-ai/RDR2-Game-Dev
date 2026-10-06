@@ -38,8 +38,6 @@ func down(id: int, point: Vector2, time: float, on_ui: bool = false, mouse_box: 
 			last_tap_time = -INF
 			last_box = Rect2(point, Vector2.ZERO)
 			intent.emit({"kind": &"box_preview", "rect": last_box})
-		else:
-			emit_hold(0.0)
 	else:
 		# Remove any one-finger hold/box preview before camera-only input.
 		intent.emit({"kind": &"cancel"})
@@ -111,7 +109,8 @@ func advance(time: float) -> void:
 	if mode != &"tap":
 		return
 	var progress := clampf((time - hold_started) / config.box_hold_seconds, 0.0, 1.0)
-	emit_hold(progress)
+	if time - hold_started >= config.hold_ring_delay:
+		emit_hold(progress) # Quick taps finish before the delay and never show a ring.
 	if progress >= 1.0:
 		mode = &"box"
 		last_tap_time = -INF

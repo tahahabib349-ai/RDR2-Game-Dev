@@ -29,6 +29,24 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
 
 ## Completed work
 
+- 2026-10-06 · 🟣 Claude (doing 🔨 Codex's implementation at the Game Director's request) ·
+  **Second iPhone playtest fixes.** Game Director reported units vibrating when they meet, units
+  far too spread out, fast units stuck behind slow ones, and a ring flashing on every tap.
+  - Spacing now measured on screen (`footprint_radius`, design px): Ranger 12, Jackal 18,
+    Vanguard/Gatherer 20, Rig 22 (was 0.85/1.25 logical cells ≈ 3× the art sideways).
+  - Movement rewritten for smoothness (`unit_movement.gd`): string-pulled routes, persistent
+    avoidance side, blended turns, slow-or-overtake, polite walk-back after yielding, stop-short
+    only when the goal spot is occupied, 0.08 s visual smoothing. Group slots avoid standing
+    units and are assigned closest-first (`command_controller.gd`).
+  - Measured, 21 mixed units: vibration flips 926 → ~80 (converging crowd), 1,040 → ~40 (groups
+    swapping), 1,841 → ~60 (19-unit army); no jams in any scenario (previously up to 19 of 21
+    stuck). Army via Central Pass now within a few seconds of unobstructed ideal times.
+  - Selection rings: flat ground ellipses sized to each unit. Hold ring hidden for the first 0.1 s.
+  - **One publisher:** `publish-web.yml` now runs on every push to `main` touching `game/`
+    (tests → export → deploy). `gh-pages` emptied to a README; `tools/publish_web.sh` removed.
+  - Suite 116 → 126 checks (new: crowd vibration, no overlap, no jam, Jackal-before-Rangers,
+    gathered group not scattered, quick tap shows no ring). All pass. Browser-checked in
+    mobile-sized Chromium; not yet on a physical iPhone.
 - 2026-10-06 · 🔨 Codex · Applied the first iPhone playtest fixes only: one-finger 0.4 s
   hold-to-box with 20 px slop and a filling ring; hold without drag cancels; a second finger
   cancels selection and becomes pinch/scroll only. Desktop supports Shift+drag and hold+drag.
@@ -102,7 +120,7 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
 
 | Task | Owner | Status |
 |---|---|---|
-| Phase 1 battlefield/movement/controls | 🔨 Codex | ✅ Implemented; 116 checks pass; phone acceptance pending |
+| Phase 1 battlefield/movement/controls | 🔨 Codex (second-playtest fixes by 🟣 Claude at the Game Director's request) | ✅ Implemented; 126 checks pass; phone acceptance pending |
 | Phase 1 phone playtest | Game Director, with 🔨 Codex preparing deployment/fixes | Web build live on GitHub Pages; First iPhone playtest done; revised build retest pending |
 | Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | ✅ Complete; awaiting Game Director review |
 | `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v4 complete; Phase 1 subset implemented per Game Director request |
@@ -156,7 +174,11 @@ Phase 2 is not started or authorized by this task.
   are fixed and automatically/browser checked. The Game Director must retest the revised build.
 - Claude's ripgrep dependency finding is **resolved**: test.sh uses standard grep -E.
 - Blueprint balance numbers remain tunable starting values; only movement is implemented/tested.
-- New hold-to-box gesture and idle yielding/settling need physical-phone feel testing.
+- New hold-to-box gesture and the rewritten smooth movement need physical-phone feel testing.
+- Unit name labels (placeholder text) still overlap in tight groups; they go away with real art.
+- A unit nudged aside in a crowd may end up to ~2 unit-widths from its exact slot (by design:
+  it stays put rather than shoving back). Tests allow ≤ 2 unit-widths.
+- No-overlap tests allow 99% of the spacing (worst measured 99.8%, under a third of a pixel).
 - Headless tests exercise viewport touch events and safe-area math; they do not prove real-device
   rotation/notch handling, sustained FPS, thermals or 100-unit performance.
 - Web build runs in mobile-sized Chromium; physical iPhone Safari, notch handling and sustained

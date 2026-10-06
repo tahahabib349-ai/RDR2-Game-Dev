@@ -173,11 +173,17 @@ sit on top of or pass through each other:
   and then settles, like classic RTS units do, instead of being driven through.
 - Groups arrive *around* the marker, each unit on its own spot, as now.
 - Brief touching while squeezing past is fine. Visibly stacked or ghosting units is a bug.
-How this is done (collision, avoidance, nudging) is 🔨 Codex's choice; this is the rule the
-player sees.
+- **No vibrating** (second iPhone playtest, 2026-10-06): units must never visibly shake or
+  twitch when they meet. They curve around each other, slow down behind slower traffic, and a
+  unit that stepped aside walks back calmly, or stays where it is if its spot is taken.
+- **Not scattered:** a gathered group stands close together, about 1.2–1.3× each unit's drawn
+  size apart, not several unit-widths apart.
+How this is done (collision, avoidance, nudging) is the implementer's choice; this is the rule
+the player sees.
 
 **Always visible on the battlefield:**
-- A selection ring under every selected unit or building.
+- A selection ring under every selected unit or building: a flat ellipse on the ground, sized to
+  the unit, so rings in a tight group don't pile up (second iPhone playtest, 2026-10-06).
 - Health bars on selected units, damaged units, and anything currently in combat. They are
   hidden otherwise to cut clutter.
 - An order marker for about 1 second after each order.

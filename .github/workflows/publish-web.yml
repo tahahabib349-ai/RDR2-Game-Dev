@@ -1,14 +1,13 @@
 name: Publish Phase 1 Web
+# One publisher only: every push to main that touches the game (or this file) runs the full
+# test suite, exports the single-threaded Web build and deploys it to GitHub Pages.
+# Generated files are uploaded as a Pages artifact, never committed. The gh-pages branch is
+# no longer used for publishing (see its README), so nothing can redeploy an old build.
 on:
   push:
-    branches: [gh-pages]
-    paths: [.github/workflows/publish-web.yml]
+    branches: [main]
+    paths: [game/**, .github/workflows/publish-web.yml]
   workflow_dispatch:
-    inputs:
-      build_ref:
-        description: Source commit to test, export and publish
-        required: true
-        default: main
 permissions:
   contents: read
   pages: write
@@ -16,8 +15,6 @@ permissions:
 concurrency:
   group: phase-one-web
   cancel-in-progress: false
-env:
-  BUILD_REF: main
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -27,8 +24,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.build_ref || env.BUILD_REF }}
       - name: Set up pinned Godot and run full tests
         run: game/tools/setup.sh
       - name: Export single-threaded Web build

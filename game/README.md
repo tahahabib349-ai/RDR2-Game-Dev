@@ -86,7 +86,7 @@ shortcuts are intentionally inactive until the corresponding touch features exis
   test spawns and movement tuning. Ore is a visual landmark only. Central Pass is a 7-cell
   opening; East Cut is a 6-cell opening. The ridge follows the revised MISSION_ZERO coordinates, half-width 2.0, from the west edge
   to the south edge. Central Pass (51,54), East Cut (84.5,79); closing both eliminates all base-to-base routes.
-- `data/units/*.tres`: unit IDs, movement speed/spacing, army membership and placeholder colors.
+- `data/units/*.tres`: unit IDs, movement speed, on-screen footprint radius, army membership and placeholder colors.
 - `scripts/core`: logical map, sole isometric conversion service, terrain view and mission wiring.
 - `scripts/input`: timestamp-driven recognizer, raw touch/mouse adapter, camera.
 - `scripts/selection`: screen-space picking/selection; no movement decisions.
@@ -94,14 +94,35 @@ shortcuts are intentionally inactive until the corresponding touch features exis
 - `scripts/movement`: shared AStarGrid2D, no corner cutting, continuous waypoint following,
   swept unit spacing, idle yielding/settling and stuck/invalid-path recovery.
 
-Simulation runs at a fixed 20 Hz and visuals interpolate previous/current logical positions.
-Unit speeds match the revised UNIT_SYSTEM table (about ×0.7): Ranger 2.3, Jackal 4.2,
-Vanguard 2.6, Gatherer 2.2 and Rig 1.6 cells/s. Spacing radii conservatively enclose body/shadow
-art: Rangers 0.85 cells, vehicles 1.25. Swept checks cover movement and render interpolation,
-so units cannot tunnel through each other. Idle friends step aside, then return to their resting
-spot after traffic clears (or settle in the new spot if a friend now occupies the old one). Group destinations respect combined radii, with 3-cell slot spacing.
-Tests measure full spacing throughout a driven-through-idle lane and a mixed group move,
-including arrival, yielding and settling; the requested 80% minimum is exceeded.
+Simulation runs at a fixed 20 Hz and visuals interpolate previous/current logical positions,
+then trail them by `visual_smoothing_seconds` (0.08 s) so small direction changes read as
+curves. Unit speeds match the revised UNIT_SYSTEM table (about ×0.7): Ranger 2.3, Jackal 4.2,
+Vanguard 2.6, Gatherer 2.2 and Rig 1.6 cells/s.
+
+**Spacing is measured on screen** (`footprint_radius`, design px at zoom 1): Ranger 12,
+Jackal 18, Vanguard/Gatherer 20, Rig 22, about 1.2–1.3× the drawn body. (The isometric view
+squashes the vertical axis, so the earlier circular spacing on the logical grid had to be ~3×
+too wide sideways to avoid overlap vertically.) Swept checks cover movement and render
+interpolation, so units cannot tunnel through each other.
+
+**Smooth local movement** (Claude, after the second iPhone playtest reported vibrating units):
+units aim at the farthest route point in a clear straight line (so groups spread across a
+pass instead of funnelling onto one line of cell centres); a blocked unit keeps sidestepping to
+the same side for `avoid_side_hold` seconds instead of flipping left/right; turns blend over
+ticks; behind slower traffic a unit slows or overtakes. Idle friends step aside, wait until no
+mover is within `settle_clear_px`, then walk back politely (a walk-back never pushes others and
+gives up if blocked) — only if they were pushed more than `settle_min_px`. A unit blocked near
+its goal while another unit stands on that spot stops there instead of shoving. Group slots
+avoid units already standing nearby and are assigned closest-first. All tunables live in
+`mission_zero.tres`.
+
+Measured (headless probes, 21 mixed units): vibration flips (alternating >20° turns on
+consecutive ticks) 926 → ~80 for a crowd converging on one point, 1,040 → ~40 for two groups
+swapping sides, 1,841 → ~60 for a 19-unit army crossing the map; every unit finishes moving in
+every scenario (previously up to 19 of 21 stayed jammed). Army of 19 through Central Pass:
+Jackals 23–29 s, Vanguards 35–44 s, Rangers 37–46 s (unobstructed ideal 22–25 / 35–39 /
+39–48 s); the pass takes 2–4 s to cross. The suite locks this in (crowd vibration, no overlap,
+no jam, Jackal-before-Rangers, gathered groups not scattered).
 Terrain and units share the projection; terrain art does not determine walkability. Blocked
 orders resolve to a passable destination; unreachable orders use the reachable partial path.
 Paths are requested on orders or invalid/stuck routes, rather than every tick. The camera clamps
@@ -124,28 +145,24 @@ safe-area insets for the notch/home strip and disables browser pinch/double-tap 
 stopping touch events reaching the game. This is a single-threaded WebGL 2 build, with no
 SharedArrayBuffer, cross-origin isolation headers, plugins or service-worker workaround.
 
-To rebuild and republish from the repository root on Linux x86_64 (Python 3.11+, Git and GitHub
-push access; run `setup.sh` first on a fresh machine):
+**Publishing is automatic.** Every push to `main` that touches `game/` runs
+`.github/workflows/publish-web.yml`: it installs pinned Godot, runs the full test suite, exports
+the single-threaded Web build and deploys it to the same Pages URL (a failing test stops the
+deploy). Watch **Publish Phase 1 Web** under GitHub Actions and reload Safari once it is green.
+You can also re-run it by hand from the Actions tab (`workflow_dispatch`). Generated builds are
+**never committed**; the `gh-pages` branch is no longer used for publishing (it only holds a
+README), so GitHub's branch-based Pages build can no longer bring back an old version.
+
+To build locally on Linux x86_64 (Python 3.11+):
 
 ```bash
 game/tools/setup.sh
 game/tools/export_web.sh
-game/tools/test.sh
-game/tools/publish_web.sh
 ```
 
 The export helper verifies the exact engine and installs the official 4.6.3 single-threaded
 Web templates, checking the pinned SHA-512 when downloading the archive. Local output is
-`game/export/web/` (ignored). Generated builds are **not committed**. Push your source commit,
-then run the publish helper: it updates only the deployment workflow on `gh-pages` with that
-exact source commit. GitHub Actions installs pinned Godot, runs the full suite, exports the game,
-uploads a Pages artifact and deploys it to the same URL. Watch **Publish Phase 1 Web** under
-GitHub Actions and wait for success before reloading Safari. The workflow deploys a generated Pages artifact with Pages write permission;
-it does not require a repository-settings change.
-The old static files on `gh-pages` are historical and are not updated by this publishing path.
-A source PR alone does not republish. Once the workflow is merged into main, you can also run it
-from GitHub Actions with `gh-pages` as the workflow branch and the desired source commit as
-`build_ref`. First-party GitHub Actions are deployment tools, not game plugins/dependencies.
+`game/export/web/` (ignored by git).
 For local preview, serve `game/export/web/` with
 `python3 -m http.server 8000 --directory game/export/web` and visit localhost:8000.
 
