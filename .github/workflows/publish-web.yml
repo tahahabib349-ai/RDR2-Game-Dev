@@ -17,7 +17,7 @@ concurrency:
   group: phase-one-web
   cancel-in-progress: false
 env:
-  BUILD_REF: 1b0809916918840c164e59fe259e85a89b5d0266
+  BUILD_REF: f2780d5d32100e2ebbe4216db757d20f7a7469db
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -35,10 +35,6 @@ jobs:
         run: |
           game/tools/export_web.sh
           git rev-parse HEAD > game/export/web/source-commit.txt
-      - name: Use artifact-based Pages publishing
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
