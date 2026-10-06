@@ -6,18 +6,20 @@
 ## Current build
 
 Playable **Phase 1 greybox** in `game/`, pinned to **Godot 4.6.3 stable, official 7d41c59c4**.
-Breakpoint Valley: 72×72 logical cells, 64×32 isometric TileMapLayer, blocked rocky ridge,
+Breakpoint Valley: 108×108 logical cells, 64×32 isometric TileMapLayer, blocked rocky ridge,
 Central Pass/East Cut and visual-only ore/base landmarks. Seven labelled placeholder units
 exercise selection, group movement and differing speeds. This test roster is deliberately more
 than Mission Zero's eventual single-Rig opening; no combat, construction, economy, fog or AI.
 
 Run/setup/test instructions and phone checklist: `game/README.md`. Headless and rendered desktop
-runs: **98 passed, 0 failed**; intentional failure diagnostic returned exit code **1**.
-Physical-phone gesture feel, safe-area behaviour and performance have **not** been validated.
+runs: **116 passed, 0 failed**; intentional failure diagnostic returned exit code **1**.
+The Game Director played the previous build on iPhone Safari. The revised controls/movement
+need a fresh phone retest; notch handling and sustained performance remain unmeasured.
 Single-threaded Godot 4.6.3 Web export published at
-**https://tahahabib349-ai.github.io/RDR2-Game-Dev/** via the dedicated `gh-pages` branch.
+**https://tahahabib349-ai.github.io/RDR2-Game-Dev/** via an artifact-based GitHub Actions deployment triggered from `gh-pages` (no build files
+committed by the updated publish helper).
 Browser startup/layout/page-gesture blocking and real tap/pinch/held-box touch dispatch checked
-in mobile-sized Chromium without special headers; page scale stayed 1. Physical iPhone Safari verification remains pending. No Android APK is included in the
+in mobile-sized Chromium without special headers; page scale stayed 1. Revised physical iPhone Safari verification remains pending. No Android APK is included in the
 final PR; native iOS export/performance validation still requires Mac/signing.
 
 ## Phase
@@ -26,6 +28,21 @@ final PR; native iOS export/performance validation still requires Mac/signing.
 The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See `ROADMAP.md`.
 
 ## Completed work
+
+- 2026-10-06 · 🔨 Codex · Applied the first iPhone playtest fixes only: one-finger 0.4 s
+  hold-to-box with 20 px slop and a filling ring; hold without drag cancels; a second finger
+  cancels selection and becomes pinch/scroll only. Desktop supports Shift+drag and hold+drag.
+  Minimum zoom is 1.0; deselect uses the font-supported ASCII X glyph.
+- 2026-10-06 · 🔨 Codex · Replaced soft separation with swept movement/interpolation checks,
+  conservative body/shadow radii, local sidesteps, idle yielding and return-to-rest settling.
+  Group slots enforce combined radii. Idle-lane minimum spacing ratio 1.00179; mixed-group
+  minimum 1.00008; all arrive. Actual mission groups keep full spacing through the passes.
+- 2026-10-06 · 🔨 Codex · Applied the approved 108×108 map, exact landmark/ridge/pass coordinates,
+  ridge half-width 2.0, relocated spawns around (18,87), and revised unit speeds. Both passes
+  closed means no base-to-base route. Updated old coordinate tests; 11,018 walkable cells
+  remain viewable at default zoom on standard/wide viewports. Full headless/rendered suites:
+  116 passed, 0 failed. Single-threaded Web export republished via an artifact upload; no build files committed.
+  Publish helper/workflow updated to preserve the same URL without committing generated files.
 
 - 2026-10-06 · 🔨 Codex · Fixed Claude's camera review finding: clamp against projected map
   bounds plus a tunable 48 design-pixel dark border. Exhaustive default-zoom tests bring all
@@ -48,7 +65,7 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
   gesture/map/unit data, logical-to-isometric conversion, greybox terrain, shared AStarGrid2D,
   distinct group slots, local spacing/re-path recovery, fixed 20 Hz movement and visual interpolation.
   One raw input adapter produces selection/camera/command intents for touch and desktop.
-  Includes tap/double-tap, two-finger held box vs immediate pinch, UI-origin/cancel protection,
+  Includes tap/double-tap, two-finger one-finger held box vs quick pan, two-finger pinch/scroll, UI-origin/cancel protection,
   ✕, All Army, move markers, camera limits/inertia/anchored zoom, landscape-only canvas_items/expand
   and safe-area HUD. Godot GUI touch buttons are explicitly routed without mouse emulation.
 - 2026-10-06 · 🔨 Codex · Verified 88 checks in both headless and software-OpenGL desktop runners;
@@ -81,38 +98,32 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
 
 | Task | Owner | Status |
 |---|---|---|
-| Phase 1 battlefield/movement/controls | 🔨 Codex | ✅ Implemented; 98 checks pass; phone acceptance pending |
-| Phase 1 phone playtest | Game Director, with 🔨 Codex preparing deployment/fixes | Web build live on GitHub Pages; iPhone Safari playtest pending |
+| Phase 1 battlefield/movement/controls | 🔨 Codex | ✅ Implemented; 116 checks pass; phone acceptance pending |
+| Phase 1 phone playtest | Game Director, with 🔨 Codex preparing deployment/fixes | Web build live on GitHub Pages; First iPhone playtest done; revised build retest pending |
 | Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | ✅ Complete; awaiting Game Director review |
-| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v3 complete; Phase 1 subset implemented per Game Director request |
+| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v4 complete; Phase 1 subset implemented per Game Director request |
 | `docs/ART_DIRECTION.md` | Unassigned (proposed: 🟢 ChatGPT, with 🟣 Claude for UI visuals) | Not started |
 
 ## Next recommended task
 
 The Game Director uses an **iPhone**. Open the Pages link above in Safari, rotate to landscape,
 and optionally Add to Home Screen. Use the checklist in `game/README.md`: every edge/corner,
-held box vs immediate pinch, quick moves, pan-with-selection, crowding and notches. Confirm the
+one-finger held box vs quick pan, two-finger pinch/scroll, quick moves, pan-with-selection, crowding and notches. Confirm the
 Safari page stays still during two-finger gestures. Fix findings before combat. Native
  iOS/performance testing requires a Mac/signing later.
 
-🟢 ChatGPT owns the remaining third-route/ridge-layout design decisions. Copy-paste prompt:
-"Read AGENTS.md, AI_HANDOFF.md Known issues, docs/MISSION_ZERO.md and
- game/data/missions/mission_zero.tres. Decide whether the west-edge third route and the ridge
- extension beyond (48,18) are intentional. Confirm the greybox or update the map design;
- do not add later-phase gameplay." Recommended: GPT-6.1 at medium reasoning.
+The ridge/route/map-speed decisions below are implemented as approved. 🟢 ChatGPT can review
+Claude's covering design decision when available; do not revert it pending that review.
 
 Phase 2 is not started or authorized by this task.
 
 ## Architectural decisions
 
-- 2026-10-06 · Controls (Game Director decisions): **one finger scrolls the map, two fingers held
-  still draw the selection box** (two fingers moving at once = pinch zoom); **landscape only**; building placement uses
-  small, calm ✓/✕ confirm buttons; smallest checked screen ~5.5", tablets show more battlefield
-  rather than bigger buttons.
-- Phase 1 controls (implemented per the Game Director's request): 1280×720 design
-  resolution; orders fire on finger up;
-  gesture thresholds live in a data file; one input layer turns touch/mouse into intents (Tap,
-  DoubleTap, Pan, TwoFingerBox, Pinch) that feed Selection/Commands.
+- 2026-10-06 · Controls: **one finger held 0.4 s then dragged selects a box**, with 20 px
+  slop and a filling ring; lift without drag changes nothing. Quick one-finger drag scrolls;
+  **two fingers only pinch/scroll** and never select. Landscape only; minimum zoom 1.0.
+- 1280×720 design resolution; orders fire on finger up; gesture thresholds in `gestures.tres`.
+  One input adapter produces tap/double-tap/pan/box/pinch intents for touch and mouse.
 - Engine: **Godot 4.6.3 stable official 7d41c59c4**, GDScript; full pin in `game/GODOT_VERSION`.
 - Targets: Android and iOS; desktop builds for development/testing.
 - Presentation: modern 2D isometric / 2.5D visual treatment on a 2D simulation; gameplay uses logical orthogonal square-grid coordinates.
@@ -133,29 +144,28 @@ Phase 2 is not started or authorized by this task.
 
 ## Known issues
 
-- Claude's camera edge-visibility finding is **resolved**: all 4,945 passable cells can be
-  viewed at default zoom, including edges/corners, with bounded dark overscroll. Physical-phone
-  verification remains pending.
-- 🟣 Review 2026-10-06 · **Third route along the west edge.** The ridge starts at (8,40) as the
-  blueprint says, which leaves cells x<7 open. With Central Pass and East Cut both closed, a path
-  of 75 cells still links the bases (Central route 58, East Cut route 68). MISSION_ZERO describes
-  two routes. Design decision: 🟢 ChatGPT.
-- 🟣 Review 2026-10-06 · `mission_zero.tres` extends the ridge beyond the blueprint's (48,18)
-  end, through (56,32), (50,42) and (58,56), to force the East Cut. It's a reasonable reading but
-  undocumented; 🟢 ChatGPT should confirm it or update MISSION_ZERO.md.
+- Camera edge visibility remains resolved on the enlarged map: all 11,018 passable cells
+  viewable at default zoom, including edges/corners, with bounded dark overscroll.
+- Claude's west-edge third-route and undocumented ridge-extension findings are **resolved**
+  by the approved MISSION_ZERO revision. Exact ridge/pass coordinates applied; sealed-pass test passes.
+- First iPhone playtest findings (old box gesture, unit overlap, minimum zoom and missing ✕)
+  are fixed and automatically/browser checked. The Game Director must retest the revised build.
 - Claude's ripgrep dependency finding is **resolved**: test.sh uses standard grep -E.
 - Blueprint balance numbers remain tunable starting values; only movement is implemented/tested.
-- The 0.2 s box-vs-pinch rule is covered by automated tests, but physical-phone feel is untested.
-  A dedicated box button remains a fallback if playtests show the gesture is unreliable.
+- New hold-to-box gesture and idle yielding/settling need physical-phone feel testing.
 - Headless tests exercise viewport touch events and safe-area math; they do not prove real-device
   rotation/notch handling, sustained FPS, thermals or 100-unit performance.
 - Web build runs in mobile-sized Chromium; physical iPhone Safari, notch handling and sustained
   performance are untested. Browser bars depend on Safari; Add to Home Screen gives more space.
   Native iOS remains unprepared and requires macOS/signing.
-- Placeholder unit labels/art and simple local spacing need playtesting; no polished audio,
+- Placeholder unit labels/art and revised local spacing need playtesting; no polished audio,
   haptics, tablet physical sizing or later-phase control groups/combat shortcuts are included.
 
 ## Recently modified files
+
+- 2026-10-06 · 🔨 Codex: gesture recognizer/config/HUD/session; movement and group destination
+  allocation; mission/unit Resources; headless regression runner; artifact-based publish helper and `.github/workflows/publish-web.yml`;
+  `game/README.md`, `AI_HANDOFF.md`.
 
 - 2026-10-06 · 🔨 Codex: camera/projection/gesture data and coverage tests; portable test wrapper;
   Web export preset/setup/export/publish helpers, original icon and `game/web/shell.html`; `game/README.md`, `AI_HANDOFF.md` and the
@@ -195,7 +205,8 @@ Phase 2 is not started or authorized by this task.
 ## First iPhone playtest: findings and decisions (2026-10-06)
 
 Game Director played the Phase 1 web build (PR #2) on iPhone Safari. 🟣 Claude measured each point
-in the same build with headless Godot.
+in the same build with headless Godot. **Historical findings: the fixes below are now implemented;
+retest the republished build.**
 
 1. **Decision: box select becomes one-finger press-and-hold (0.4 s), then drag.** Two fingers now
    only zoom and scroll. Replaces the two-finger box. `docs/MOBILE_CONTROLS.md` v4 §4. Owner to
@@ -233,4 +244,4 @@ review it when back. It was prototyped in the engine before being written down; 
   a 21% detour (~128 cells) instead of 9%.
 - The first enemy wave now reaches the player ~5:15–5:25 instead of ~4:50; recheck in Phase 5/6.
 - 🔨 Codex: apply via `mission_zero.tres` and the unit `.tres` files. The current suite then fails
-  5 tests that hard-code 72 or old coordinates; update them.
+  5 tests that hard-code 72 or old coordinates; **applied and updated by Codex in this task**.

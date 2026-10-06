@@ -11,7 +11,7 @@ func _init(service: PathService, config: MissionConfig) -> void:
 func issue_move(units: Array[UnitMovement], destination: Vector2) -> int:
 	if not paths.map.contains(paths.map.cell_of(destination)):
 		return 0
-	var reserved: Dictionary = {}
+	var reserved: Array[Dictionary] = []
 	var accepted := 0
 	var candidates := GroupSlots.candidates(destination, maxi(25, units.size() * 9), mission.slot_spacing)
 	for unit in units:
@@ -21,10 +21,12 @@ func issue_move(units: Array[UnitMovement], destination: Vector2) -> int:
 			var route := paths.path(unit.logical_position, slot)
 			if route.is_empty():
 				continue
-			var final_cell := paths.map.cell_of(route[-1])
-			if reserved.has(final_cell):
+			var fits := true
+			for entry in reserved:
+				fits = fits and route[-1].distance_to(entry.point) >= unit.stats.spacing_radius + entry.radius
+			if not fits:
 				continue
-			reserved[final_cell] = true
+			reserved.append({"point": route[-1], "radius": unit.stats.spacing_radius})
 			unit.set_route(route)
 			accepted += 1
 			break

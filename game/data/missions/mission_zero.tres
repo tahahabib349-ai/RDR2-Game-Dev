@@ -2,21 +2,21 @@
 [ext_resource type="Script" path="res://scripts/data/mission_config.gd" id="1"]
 [resource]
 script = ExtResource("1")
-size = Vector2i(72, 72)
+size = Vector2i(108, 108)
 tile_size = Vector2i(64, 32)
-player_start = Vector2(12, 58)
-enemy_base = Vector2(60, 14)
-ore_centers = PackedVector2Array(20, 52, 18, 31, 36, 36, 53, 20)
+player_start = Vector2(18, 87)
+enemy_base = Vector2(90, 21)
+ore_centers = PackedVector2Array(26, 81, 27, 46, 54, 54, 83, 27)
 ore_radius = 3.0
-ridge = PackedVector2Array(8, 40, 24, 39, 34, 36, 40, 26, 48, 18, 56, 32, 50, 42, 58, 56)
-ridge_half_width = 1.5
-central_pass = Vector2(34, 36)
+ridge = PackedVector2Array(0, 61, 12, 60, 36, 58.5, 51, 54, 60, 39, 72, 27, 84, 48, 75, 63, 87, 84, 101, 108)
+ridge_half_width = 2.0
+central_pass = Vector2(51, 54)
 central_pass_radius = 3.5
-east_cut = Vector2(50, 42)
+east_cut = Vector2(84.5, 79)
 east_cut_radius = 3.0
-spawn_positions = PackedVector2Array(12.5, 58.5, 14.5, 56.5, 16.5, 56.5, 14.5, 59.5, 17.5, 59.5, 19.5, 58.5, 15.5, 62.5)
+spawn_positions = PackedVector2Array(18.5, 87.5, 21.5, 84.5, 24.5, 84.5, 21.5, 89.5, 26.5, 89.5, 29.5, 87.5, 23.5, 94.5)
 spawn_types = PackedStringArray("pioneer_rig", "ranger", "ranger", "ranger", "jackal", "vanguard_tank", "gatherer")
-slot_spacing = 1.5
+slot_spacing = 3.0
 separation_strength = 3.0
 stuck_seconds = 2.0
 arrival_distance = 0.03
