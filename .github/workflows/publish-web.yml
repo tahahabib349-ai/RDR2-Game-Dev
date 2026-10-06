@@ -17,7 +17,7 @@ concurrency:
   group: phase-one-web
   cancel-in-progress: false
 env:
-  BUILD_REF: 80e88fec45daa336b1efdee8544889e05ef6ec01
+  BUILD_REF: 9ef122c0421c643ce2a8b7b2e6cc81ba6bd44b33
 jobs:
   publish:
     runs-on: ubuntu-latest
