@@ -17,13 +17,13 @@ concurrency:
   group: phase-one-web
   cancel-in-progress: false
 env:
-  BUILD_REF: f2780d5d32100e2ebbe4216db757d20f7a7469db
+  BUILD_REF: 80e88fec45daa336b1efdee8544889e05ef6ec01
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: github-pages
+      name: phase-one-web
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
