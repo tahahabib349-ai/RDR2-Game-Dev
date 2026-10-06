@@ -10,6 +10,7 @@ extends Resource
 @export var inertia_seconds: float = 0.3
 @export var min_zoom: float = 0.75
 @export var max_zoom: float = 2.5
+@export var camera_border_margin: float = 48.0
 @export var initial_zoom: float = 1.5
 @export var wheel_zoom_factor: float = 1.12
 @export var minimum_pinch_distance: float = 1.0

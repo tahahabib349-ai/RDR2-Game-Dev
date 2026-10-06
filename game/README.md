@@ -45,7 +45,7 @@ wrapper adds a timeout and rejects script errors or missing result summaries eve
 zero. `game/tools/test.sh --force-failure` intentionally returns 1 to verify this failure path;
 it is a runner diagnostic, not a normal suite failure.
 
-Validated: **88 checks passed, 0 failed** in headless Godot and the rendered desktop runner.
+Validated: **98 checks passed, 0 failed** in headless Godot and the rendered desktop runner.
 Checks cover gesture timing/cancellation, native viewport touch dispatch, UI-origin protection,
 selection, TileMap/projection alignment, AStar paths and blocked/unreachable destinations,
 dynamic route invalidation, mixed-unit group arrivals, no per-tick path rebuilding, 20 Hz
@@ -79,7 +79,7 @@ shortcuts are intentionally inactive until the corresponding touch features exis
 ## Data and system boundaries
 
 - `data/gestures.tres`: gesture thresholds, tap radius, inertia, camera zoom limits, marker time,
-  button sizes and spacing. Sizes use viewport/design pixels at a 720 px design height.
+  button sizes, spacing and camera border margin. Sizes use viewport/design pixels at a 720 px design height.
 - `data/missions/mission_zero.tres`: 72×72 map, 64×32 visual cells, ridge/passes, ore landmarks,
   test spawns and movement tuning. Ore is a visual landmark only. Central Pass is a 7-cell
   opening; East Cut is a 6-cell opening. Coordinates are tunable greybox choices.
@@ -95,7 +95,10 @@ Simulation runs at a fixed 20 Hz and visuals interpolate previous/current logica
 Terrain and units share the projection; terrain art does not determine walkability. Blocked
 orders resolve to a passable destination; unreachable orders use the reachable partial path.
 Paths are requested on orders or invalid/stuck routes, rather than every tick. The camera clamps
-all four viewport corners inside the playable diamond and adjusts minimum zoom for wide screens.
+against the projected map bounds with a tunable **48 design-pixel dark border**. This allows
+all walkable cells, including every edge/corner, to come on screen. Both 1280×720 and 1600×720
+coverage tests view **all 4,945 passable cells at the default 1.5 zoom**, with zero missed cells.
+Overscroll remains bounded; the camera does not keep the whole viewport inside the diamond.
 
 Landscape in both directions, 1280×720 design resolution, `canvas_items` / `expand` and safe-area
 HUD insets are configured. UI sizes are at least 80×80 design pixels. Tablet physical sizing,
@@ -103,12 +106,41 @@ polished audio/haptics and richer control accessibility remain later-phase work.
 
 ## Phone playtest (not yet performed)
 
-No signed Android/iOS build is included. Phone deployment requires matching Godot export
-templates and the platform toolchain; iOS signing/builds require macOS. These tools and signing
-credentials were not installed or validated in this Phase 1 task. Open the project on a desktop
-to try it immediately; a Codex mobile-export task can prepare an Android test APK separately.
+Play in iPhone Safari: **https://tahahabib349-ai.github.io/RDR2-Game-Dev/**
+Rotate to landscape. For more screen space, use Safari's Share → Add to Home Screen, then
+launch the saved icon. Safari's browser bars may still occupy space when played in a normal tab;
+the canvas fills the available viewport. Portrait shows a rotation prompt. The HTML shell uses
+safe-area insets for the notch/home strip and disables browser pinch/double-tap zoom without
+stopping touch events reaching the game. This is a single-threaded WebGL 2 build, with no
+SharedArrayBuffer, cross-origin isolation headers, plugins or service-worker workaround.
 
-Once a phone test build is available, try:
+To rebuild and republish from the repository root on Linux x86_64 (Python 3.11+, Git and GitHub
+push access; run `setup.sh` first on a fresh machine):
+
+```bash
+game/tools/setup.sh
+game/tools/export_web.sh
+game/tools/test.sh
+game/tools/publish_web.sh
+```
+
+The export helper verifies the exact engine and installs the official 4.6.3 single-threaded
+Web templates, checking the pinned SHA-512 when downloading the archive. Local output is
+`game/export/web/` (ignored). The publish helper replaces the generated site on the dedicated
+`gh-pages` branch using a temporary deployment directory, then pushes it. It never merges source
+into main. Commit source changes before publishing so `source-commit.txt` identifies the build.
+GitHub repository Settings → Pages must use **Deploy from a branch**, **gh-pages**, **/(root)**
+(already configured for this repository). Wait for the Pages deployment to finish, then reload
+Safari; a source PR alone does not republish. For local preview, serve `game/export/web/` with
+`python3 -m http.server 8000 --directory game/export/web` and visit localhost:8000.
+
+Validated in Chromium with an 844×390 mobile viewport: actual Web startup with cross-origin
+isolation disabled, full viewport canvas, portrait prompt and page-gesture cancellation.
+Physical iPhone Safari touch feel, notch handling and performance remain **untested**; native
+iOS performance testing will need a Mac/signing later. No Android APK is included in this PR.
+The test wrapper uses standard `grep -E`, without a ripgrep dependency.
+
+On the phone, try:
 
 1. Tap a Ranger from slightly beside its artwork, then double tap it. Only visible Rangers
    should join the selection.
@@ -117,11 +149,11 @@ Once a phone test build is available, try:
 3. Spread two fingers immediately to zoom, then pause. It must stay zoom, with no box or order.
 4. Give 20 quick ground taps to a selected army. Look for one green marker per order and units
    spreading into distinct destinations.
-5. Pan and zoom while units are selected. No move order should fire. Drag to each map edge.
+5. Pan and zoom while units are selected. No move order should fire. Drag to each map edge and all four corners; every cell should be visible with a thin dark border.
 6. Try All Army and ✕: the Rig/Gatherer stay out of the army selection; ✕ clears selection.
 7. Send a mixed group through Central Pass and East Cut. Check for obvious jams or clipping.
 8. Drag from a HUD button onto the map and back. It must not move units or activate the button.
-9. Rotate between both landscape directions on a notched phone. Portrait should stay disabled;
+9. Rotate between both landscape directions on a notched phone. Portrait should show the rotation prompt;
    buttons must stay clear of the notch/home strip. Try one-handed and two-handed use.
 
 The first priority is whether the 0.2-second pause reliably distinguishes box selection from

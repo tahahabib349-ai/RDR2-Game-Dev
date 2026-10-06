@@ -207,7 +207,7 @@ it after playtesting.
 | Pinch | Zoom around the point between the fingers |
 | Zoom range | Closest: a tank fills about 1/10 of the screen height. Furthest: about one base and its surroundings fit on screen, which is **zoom 1.0** (one screen ≈ 17% of Breakpoint Valley). The Phase 1 build allowed 0.75 (31% of the map on one screen), which made the map feel small; raise the minimum to 1.0. Exact values in data. |
 | Minimap tap/drag | Jump/scrub the camera |
-| Map edges | Camera stops at the map border with a soft bounce, never showing beyond it |
+| Map edges | Camera stops at the map border with a soft bounce and a small dark presentation margin; every walkable cell, edge and corner can be brought on screen |
 | Base button (in menu or double-tap minimap) | Centre on the Field Command |
 | Alert tap (Phase 5+) | Tapping "Base under attack!" jumps the camera to the fight |
 
