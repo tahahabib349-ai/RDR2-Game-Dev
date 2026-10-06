@@ -146,12 +146,15 @@ stopping touch events reaching the game. This is a single-threaded WebGL 2 build
 SharedArrayBuffer, cross-origin isolation headers, plugins or service-worker workaround.
 
 **Publishing is automatic.** Every push to `main` that touches `game/` runs
-`.github/workflows/publish-web.yml`: it installs pinned Godot, runs the full test suite, exports
-the single-threaded Web build and deploys it to the same Pages URL (a failing test stops the
-deploy). Watch **Publish Phase 1 Web** under GitHub Actions and reload Safari once it is green.
-You can also re-run it by hand from the Actions tab (`workflow_dispatch`). Generated builds are
-**never committed**; the `gh-pages` branch is no longer used for publishing (it only holds a
-README), so GitHub's branch-based Pages build can no longer bring back an old version.
+`.github/workflows/publish-web.yml`. GitHub Pages in this repository only accepts deployments
+from the `gh-pages` branch, so the `main` run asks GitHub to run the same workflow on
+`gh-pages` for the pushed commit; that run installs pinned Godot, runs the full test suite,
+exports the single-threaded Web build and deploys it to the same Pages URL (a failing test stops
+the deploy). Watch **Publish Phase 1 Web** under GitHub Actions (two runs: `main` then
+`gh-pages`) and reload Safari once the second is green. To republish by hand, run the workflow
+from the Actions tab on `main`. Generated builds are **never committed**, and nothing is pushed to
+`gh-pages` to publish, so GitHub's branch-based Pages build can't bring back an old version.
+`gh-pages` holds only a README and a copy of the workflow file — keep the two copies identical.
 
 To build locally on Linux x86_64 (Python 3.11+):
 

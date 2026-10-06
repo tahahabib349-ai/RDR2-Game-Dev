@@ -42,8 +42,10 @@ The Game Director explicitly requested Phase 1 implementation on 2026-10-06. See
     swapping), 1,841 → ~60 (19-unit army); no jams in any scenario (previously up to 19 of 21
     stuck). Army via Central Pass now within a few seconds of unobstructed ideal times.
   - Selection rings: flat ground ellipses sized to each unit. Hold ring hidden for the first 0.1 s.
-  - **One publisher:** `publish-web.yml` now runs on every push to `main` touching `game/`
-    (tests → export → deploy). `gh-pages` emptied to a README; `tools/publish_web.sh` removed.
+  - **One publisher:** a push to `main` touching `game/` runs `publish-web.yml`, which dispatches
+    the same workflow on `gh-pages` (Pages here only accepts deployments from `gh-pages`); that
+    run tests → exports → deploys the pushed commit. Old build files removed from `gh-pages`
+    (now a README + the workflow copy; keep both copies identical). `tools/publish_web.sh` removed.
   - Suite 116 → 126 checks (new: crowd vibration, no overlap, no jam, Jackal-before-Rangers,
     gathered group not scattered, quick tap shows no ring). All pass. Browser-checked in
     mobile-sized Chromium; not yet on a physical iPhone.

@@ -1,29 +1,52 @@
 name: Publish Phase 1 Web
-# One publisher only: every push to main that touches the game (or this file) runs the full
-# test suite, exports the single-threaded Web build and deploys it to GitHub Pages.
-# Generated files are uploaded as a Pages artifact, never committed. The gh-pages branch is
-# no longer used for publishing (see its README), so nothing can redeploy an old build.
+# One publisher, fully automatic: every push to main that touches the game (or this file)
+# republishes the iPhone/Web build. GitHub Pages here only accepts deployments from the
+# gh-pages branch, so this file lives on both branches and does two things:
+# - on main: ask GitHub to run this same workflow on gh-pages for the pushed commit;
+# - on gh-pages: check out that commit, run the full test suite, export the single-threaded
+#   Web build and deploy it as a Pages artifact (a failing test stops the deploy).
+# Nothing is ever pushed to gh-pages to publish, so GitHub's branch-based Pages build never
+# runs and can't race or bring back an old version. Generated files are never committed.
+# If you edit this file, copy it to the gh-pages branch too.
 on:
   push:
     branches: [main]
     paths: [game/**, .github/workflows/publish-web.yml]
   workflow_dispatch:
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    inputs:
+      build_ref:
+        description: Source commit or branch to test, export and publish
+        required: true
+        default: main
 concurrency:
-  group: phase-one-web
+  group: phase-one-web-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  request:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Run the publisher on gh-pages for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publish-web.yml --repo "$GITHUB_REPOSITORY" --ref gh-pages -f build_ref="$GITHUB_SHA"
   publish:
+    if: github.ref == 'refs/heads/gh-pages'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: phase-one-web
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.build_ref || 'main' }}
       - name: Set up pinned Godot and run full tests
         run: game/tools/setup.sh
       - name: Export single-threaded Web build
