@@ -152,6 +152,10 @@ Phase 2 is not started or authorized by this task.
 
 ## Important warnings
 
+- 2026-10-06: **The Game Director's test phone is an iPhone (no Android).** An APK can't be
+  playtested. Plan proposed by 🟣 Claude: a single-threaded Godot **Web export** hosted on GitHub
+  Pages and played in iPhone Safari for control-feel testing now. A native iOS build (Mac or cloud
+  Mac, Apple Developer account, TestFlight) comes later for performance testing.
 - Source `game/tools/env.sh` before direct Godot invocations in cloud tasks; use
   `game/tools/setup.sh` for exact-version installation/import/tests. Do not silently float versions.
 - Use the existing isolated checkout, without a worktree unless explicitly requested.
