@@ -5,7 +5,8 @@
 
 ## Current build
 
-No game build yet. The repository holds only project documents and reference skills.
+No game build yet. The repository now contains the Phase 0 game-design and technical-architecture
+blueprint plus project documents/reference skills. Mobile controls remain pending.
 
 ## Phase
 
@@ -13,10 +14,12 @@ No game build yet. The repository holds only project documents and reference ski
 
 ## Completed work
 
-- 2026-10-06 · 🟣 Claude · Wrote `docs/MOBILE_CONTROLS.md` (draft v1): screen layout, gesture
-  map, tap-target rules, orders and feedback, control groups, camera, building placement,
-  production queues, accidental-input protection, desktop test controls, per-phase rollout, test
-  plan. Awaiting Game Director approval and answers to its §16 questions.
+- 2026-10-06 · 🟢 ChatGPT · Completed the Phase 0 blueprint: `docs/MISSION_ZERO.md`,
+  `docs/GAME_DESIGN.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`,
+  `docs/ECONOMY.md`, and `docs/TECHNICAL_ARCHITECTURE.md`. Defined Mission Zero map/AI,
+  original unit/building roster and tunable baseline balance, power/fog/economy rules, and a
+  Godot 4.x architecture using 2D isometric presentation, a logical square grid,
+  `AStarGrid2D`, Resource-based stats, fixed-step simulation, and headless tests.
 - 2026-10-06 · 🔵 Joint (Claude) · Set up the repository: `MASTER_PROJECT_BRIEF.md` (the Game
   Director's brief, word for word), `AGENTS.md`, `AI_HANDOFF.md`, `ROADMAP.md`, `README.md`,
   empty `docs/` folder, and 75 game-dev reference skills in `.agents/skills/`.
@@ -25,52 +28,57 @@ No game build yet. The repository holds only project documents and reference ski
 
 | Task | Owner | Status |
 |---|---|---|
-| Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | Not started |
-| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | Draft v1 done; awaiting Game Director approval |
-| `docs/ART_DIRECTION.md` | Unassigned (proposed: 🟢 ChatGPT, with 🟣 Claude for UI visuals) | Not started |
+| Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | ✅ Complete; awaiting Game Director review |
+| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | Not started |
 
 ## Next recommended task
 
-After both Phase 0 tasks are approved by the Game Director: 🔨 Codex starts Phase 1 (create the
-Godot 4 project in `game/`, battlefield, camera, selection, movement, pathfinding). The prompt is
-written once the architecture doc exists.
+🟣 Claude should create `docs/MOBILE_CONTROLS.md` and reconcile it with the completed blueprint,
+especially tap-vs-drag selection behaviour, camera bounds/zoom, command gestures, placement
+confirmation/cancel, group control and minimum touch-target size. After the Game Director approves
+both Phase 0 workstreams, 🔨 Codex starts Phase 1.
 
 ## Architectural decisions
 
-- 2026-10-06: **Landscape only** (Game Director decision). Smallest checked screen ~5.5"; tablets
-  show more battlefield rather than bigger buttons.
-- Controls (proposed in `docs/MOBILE_CONTROLS.md`, pending approval): 1280×720
-  design resolution; one-finger drag pans, long-press-drag box selects; orders fire on finger
-  up; gesture thresholds live in a data file. Recommendation to the architect: one input layer
-  turns touches/mouse into intents (Tap, DoubleTap, LongPressDrag, Pan, Pinch).
-
-- Engine: Godot 4.x with GDScript (Game Director's choice).
-- Targets: Android and iOS; desktop builds for development and testing.
-- 2D vs 3D, map representation and pathfinding approach are **not decided yet**. They belong to
-  `docs/TECHNICAL_ARCHITECTURE.md` (🟢 ChatGPT).
+- Engine: Godot 4.x with GDScript; pin one exact stable Godot 4.x release when Phase 1 starts.
+- Targets: Android and iOS; desktop builds for development/testing.
+- Presentation: 2D isometric; gameplay uses logical orthogonal square-grid coordinates.
+- Mission Zero map baseline: 72 x 72 cells.
+- Pathfinding: shared `AStarGrid2D` for strategic paths plus lightweight local spacing; do not
+  use NavigationServer initially unless profiling/playtests justify a change.
+- Stats/balance: custom Godot Resource classes and text `.tres` files; gameplay numbers are not
+  hard-coded into entity scripts.
+- Simulation: fixed 20 Hz gameplay tick separated from rendering; fog may update at 5 Hz.
+- Testing: first-party GDScript headless runner with real non-zero failure exit codes; no test plugin.
+- Dependencies: no plugins/add-ons unless the Game Director approves them.
 
 ## Proposed changes awaiting the Game Director
 
-- Answer `docs/MOBILE_CONTROLS.md` §16 questions 3–4 (pan vs box-select gesture, ✓/✕ placement
-  confirm). Landscape and screen size are settled.
-- Assign an owner for `docs/ART_DIRECTION.md`.
-- Complete the fog-of-war section of the brief (it is cut off mid-sentence).
-- Pin an exact Godot 4.x version (belongs in `TECHNICAL_ARCHITECTURE.md`).
+None.
 
 ## Known issues
 
-None (no code yet).
+- Blueprint numbers are explicitly tunable starting values and have not been validated in a playable
+  build yet.
+- Mobile control details are not yet specified, so selection/command gesture assumptions must not be
+  hard-coded during Phase 1 before `docs/MOBILE_CONTROLS.md` is approved.
+- No target device has yet been selected for the 100-unit mid-range-phone performance benchmark.
 
 ## Recently modified files
 
-- 2026-10-06: `docs/MOBILE_CONTROLS.md` (new), `AI_HANDOFF.md`.
-- 2026-10-06: all files (initial setup).
+- 2026-10-06: `docs/MISSION_ZERO.md`
+- 2026-10-06: `docs/GAME_DESIGN.md`
+- 2026-10-06: `docs/UNIT_SYSTEM.md`
+- 2026-10-06: `docs/BUILDING_SYSTEM.md`
+- 2026-10-06: `docs/ECONOMY.md`
+- 2026-10-06: `docs/TECHNICAL_ARCHITECTURE.md`
+- 2026-10-06: `AI_HANDOFF.md`
 
 ## Important warnings
 
-- Godot is not preinstalled in cloud AI environments. Whoever writes the first code must install
-  a pinned Godot 4.x headless build (or set up a setup script) so tests can run.
-- `docs/TECHNICAL_ARCHITECTURE.md` (🟢) should read `docs/MOBILE_CONTROLS.md` §12, which lists
-  what the 2D-vs-3D decision changes for controls.
-- Don't start Phase 1 code before the architecture doc settles 2D vs 3D and the pathfinding
-  approach.
+- Godot is not preinstalled in cloud AI environments. Codex should install/use a pinned Godot 4.x
+  headless-capable binary or setup script before claiming tests pass.
+- Do not start Phase 1 implementation until the Game Director approves the architecture and
+  `docs/MOBILE_CONTROLS.md` settles touch-selection/command behaviour.
+- Keep the first implementation simple: no multiplayer, progression, monetization, ECS framework,
+  general-purpose behaviour tree or third-party addon.
