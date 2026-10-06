@@ -210,8 +210,13 @@ The flow is "build first, place when ready", the classic base-building rhythm:
    - **Drag the ghost** with one finger to move it. It sits about 80 px *above* the finger so
      the finger never hides it. Dragging near the screen edge scrolls the map.
    - **Dragging anywhere else** pans the camera as usual; pinch still zooms.
-   - **Large ✓ and ✕ buttons** float next to the ghost. ✓ places it (greyed out while red),
+   - **Small ✓ and ✕ buttons** sit just beside the ghost. ✓ places it (greyed out while red),
      ✕ cancels and leaves the building READY in the sidebar.
+   - **Keep them quiet** (Game Director: "shouldn't overpower the screen or look annoying"):
+     two compact round buttons, 80 px each (the minimum finger size, nothing bigger), solid and
+     calm in colour, with no pulsing, bouncing or pop-up text. They follow the ghost to the side
+     with the most free space, so they never cover the spot being built on, and they disappear
+     the moment the building is placed or cancelled.
 4. Placed → the building appears with a short build-up animation, and the sidebar icon returns
    to normal.
 
@@ -305,5 +310,5 @@ unit still selects it; a touch starting on a button never moves units.
 2. ~~Smallest phone?~~ ✅ Default (~5.5") accepted; layout auto-adjusts.
 3. **One-finger drag pans, long-press boxes** — OK as the starting point, with a "box" toggle
    as the fallback if playtests disagree?
-4. **Placement with ✓/✕ confirm** — OK, or would you rather have faster tap-to-place and
-   accept occasional mistakes?
+4. ~~Placement confirm?~~ ✅ Yes, ✓/✕ confirm, kept small and unobtrusive (Game Director,
+   2026-10-06).

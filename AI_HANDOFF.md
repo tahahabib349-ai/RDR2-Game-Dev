@@ -45,6 +45,13 @@ both Phase 0 workstreams, 🔨 Codex starts Phase 1.
 
 ## Architectural decisions
 
+- 2026-10-06 · Controls (Game Director decisions): **landscape only**; building placement uses
+  small, calm ✓/✕ confirm buttons; smallest checked screen ~5.5", tablets show more battlefield
+  rather than bigger buttons.
+- Controls (proposed in `docs/MOBILE_CONTROLS.md`, pending approval): 1280×720 design
+  resolution; one-finger drag pans, long-press-drag box-selects; orders fire on finger up;
+  gesture thresholds live in a data file; one input layer turns touch/mouse into intents (Tap,
+  DoubleTap, LongPressDrag, Pan, Pinch) that feed Selection/Commands.
 - Engine: Godot 4.x with GDScript; pin one exact stable Godot 4.x release when Phase 1 starts.
 - Targets: Android and iOS; desktop builds for development/testing.
 - Presentation: modern 2D isometric / 2.5D visual treatment on a 2D simulation; gameplay uses logical orthogonal square-grid coordinates.
@@ -61,7 +68,9 @@ both Phase 0 workstreams, 🔨 Codex starts Phase 1.
 
 ## Proposed changes awaiting the Game Director
 
-None.
+- Answer `docs/MOBILE_CONTROLS.md` §16 question 3 (one-finger drag pans, long-press-drag
+  box-selects). Landscape, screen size and ✓/✕ placement are settled.
+- Assign an owner for `docs/ART_DIRECTION.md`.
 
 ## Known issues
 
