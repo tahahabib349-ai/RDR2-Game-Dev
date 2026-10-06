@@ -1,0 +1,48 @@
+name: Publish Phase 1 Web
+on:
+  push:
+    branches: [gh-pages]
+    paths: [.github/workflows/publish-web.yml]
+  workflow_dispatch:
+    inputs:
+      build_ref:
+        description: Source commit to test, export and publish
+        required: true
+        default: main
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: phase-one-web
+  cancel-in-progress: false
+env:
+  BUILD_REF: 1b0809916918840c164e59fe259e85a89b5d0266
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.build_ref || env.BUILD_REF }}
+      - name: Set up pinned Godot and run full tests
+        run: game/tools/setup.sh
+      - name: Export single-threaded Web build
+        run: |
+          game/tools/export_web.sh
+          git rev-parse HEAD > game/export/web/source-commit.txt
+      - name: Use artifact-based Pages publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: game/export/web
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
