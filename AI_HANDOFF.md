@@ -165,3 +165,29 @@ Phase 2 is not started or authorized by this task.
   1280×720 landscape (stretch mode `canvas_items`, aspect `expand`).
 - Keep the first implementation simple: no multiplayer, progression, monetization, ECS framework,
   general-purpose behaviour tree or third-party addon.
+
+## First iPhone playtest: findings and decisions (2026-10-06)
+
+Game Director played the Phase 1 web build (PR #2) on iPhone Safari. 🟣 Claude measured each point
+in the same build with headless Godot.
+
+1. **Decision: box select becomes one-finger press-and-hold (0.4 s), then drag.** Two fingers now
+   only zoom and scroll. Replaces the two-finger box. `docs/MOBILE_CONTROLS.md` v4 §4. Owner to
+   build: 🔨 Codex.
+2. **Decision: units must never overlap or pass through each other** (MOBILE_CONTROLS v4 §6).
+   Measured: a Jackal ordered past three idle Rangers drove straight through them (0.05 cells
+   clearance, needs 0.57), and the Rangers never moved, because idle units skip separation
+   (`unit_movement.gd` `tick` returns early when the route is empty). In group moves, units
+   overlapped by up to 98% of their spacing. Spacing radii are also smaller than the drawn
+   art (Ranger 0.44 vs 0.50 cells), so units look stacked even when "separated". Owner: 🔨 Codex.
+3. **Map feels small.** Measured: units cross base to base (71.5 cells) in 12 s (Jackal) to
+   22 s (Rangers), 31 s (Pioneer Rig). Fully zoomed out (0.75), one screen shows 31% of the map.
+   - Zoom-out cap → 1.0 (17% of the map per screen): MOBILE_CONTROLS v4 §8; owner 🔨 Codex
+     (data change in `gestures.tres`).
+   - Map size and unit speeds: 🟢 ChatGPT to decide. 🟣 Claude recommends a base-to-base trip of
+     roughly 45–60 s for mainline units, via a larger map (~96–112 cells), slower speeds, or both.
+4. Smaller UI items for 🔨 Codex: the ✕ deselect button renders as an empty box in the web build
+   (the font lacks "✕"; use a drawn icon or a glyph the font has); HUD text is about 10 pt on an
+   iPhone (Phase 7 polish, not blocking).
+5. Observation, not a bug: group members travel at their own speed, so a Jackal reaches a far
+   target ~10 s before the Rangers. Classic-RTS normal; revisit only if playtests want formations.

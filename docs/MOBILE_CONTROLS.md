@@ -1,6 +1,6 @@
 # MOBILE_CONTROLS
 
-> Owner: 🟣 Claude (UI/UX). Status: **Draft v3, awaiting Game Director approval.** v3: two-finger box select (Game Director decision). v2 aligns names and rules with 🟢 ChatGPT's Phase 0 blueprint (2D isometric, Pioneer Rig, Field Command, etc.).
+> Owner: 🟣 Claude (UI/UX). Status: **Draft v4, after the first iPhone playtest.** v4 (Game Director playtest, 2026-10-06): box select is now press-and-hold with one finger, two fingers only zoom/scroll, units must never overlap, and zoom-out is capped. v3: two-finger box select (replaced in v4). v2 aligns names and rules with 🟢 ChatGPT's Phase 0 blueprint (2D isometric, Pioneer Rig, Field Command, etc.).
 > Covers how the player commands the game by touch: selection, move/attack, camera, zoom,
 > building placement, production, and army control. It describes *what the player does and
 > sees*, not how the code is structured (that is 🟢 ChatGPT's `TECHNICAL_ARCHITECTURE.md` and
@@ -12,9 +12,9 @@
 
 1. **Real RTS control, no autopilot.** The player picks units and gives orders. Nothing in this
    doc automates decisions the player should make.
-2. **One finger drags the map, two fingers select and zoom.** A one-finger tap gives orders, a
-   one-finger drag scrolls the map, two fingers held still draw a selection box, and two fingers
-   moving straight away pinch-zoom (§4).
+2. **One finger acts, two fingers only move the camera.** A one-finger tap gives orders, a
+   one-finger drag scrolls the map, and a one-finger press-and-hold then drag draws a selection
+   box. Two fingers only pinch-zoom and scroll, so they can never select or order anything (§4).
 3. **Orders happen when the finger lifts, never when it lands.** That way a finger that starts a
    pan or pinch never fires an accidental move order.
 4. **Every order gets visible feedback within one frame,** such as a marker, a flash, or a ring.
@@ -91,24 +91,26 @@ which matches iOS and Android guidance). Primary buttons (sidebar icons, Attack-
 | **Tap Flux Ore field** | Show info | Gatherers: **harvest there**; others: move there | Production building: rally there |
 | **Tap into unexplored shroud** | Nothing | **Move** there (scouting) | Production building: rally there |
 | **One-finger drag** | Pan camera | Pan camera | Pan camera |
-| **Two fingers down and held still (0.2 s)** | **Box select**: the two fingertips are opposite corners of the box | Box select (replaces) | Box select |
-| **Two fingers moving straight away (pinch)** | Zoom | Zoom | Zoom |
+| **One finger held still (0.4 s), then drag** | **Box select** from the hold point to the finger | Box select (replaces) | Box select |
+| **One finger held still, lifted without dragging** | Nothing (cancels) | Nothing (cancels) | Nothing (cancels) |
+| **Two fingers (pinch / drag)** | Zoom and scroll | Zoom and scroll | Zoom and scroll |
 
-**Two-finger box select (Game Director decision, 2026-10-06).** One finger scrolls, so the box
-uses two fingers:
-1. Put two fingers on the battlefield and keep them still for a moment (0.2 s).
-2. A box appears with a corner under each fingertip, and units inside it light up as a preview.
-3. Move the fingers to resize the box. While in box mode, moving the fingers resizes the box and
-   never zooms.
-4. Lift both fingers → everything inside is selected. Lift with nothing inside → selection
-   unchanged.
+**Press-and-hold box select (Game Director playtest decision, 2026-10-06; replaces the v3
+two-finger box).** The two-finger box felt messy next to pinch-zoom, so selection moves to one
+finger:
+1. Put one finger on the battlefield and keep it still. A ring fills under the finger over
+   0.4 s, so the player sees box mode coming.
+2. When the ring completes, box mode starts: a small pulse confirms it and the map stops
+   scrolling for this touch.
+3. Drag: the box stretches from where the finger was held to where it is now. Units inside
+   light up as a preview.
+4. Lift → everything inside is selected. Lift with nothing inside, or without dragging →
+   selection unchanged.
 
-**How it is told apart from pinch-zoom:** both use two fingers. If the fingers *start moving
-straight away* (within 0.2 s), it is a pinch and zooms. If they *land and stay still* first, it
-is a box. Players naturally pause when they mean to frame something and move immediately when
-they mean to zoom. This is the gesture most at risk of feeling wrong, so it is the first thing
-to check by hand in Phase 1. Fallback if it misfires in playtests: a small "box" button that
-turns the next one-finger drag into a box.
+**How it is told apart from scrolling:** a finger that *moves* before the ring completes is a
+scroll, as always. Only a finger that *stays still* for 0.4 s becomes a box. Two fingers never
+select, so zooming can't be mistaken for selecting. The hold time is in the data file, to tune
+after playtests.
 
 **Adding to a selection** (for example, "these 3 tanks plus those 2"): a small "+" toggle in
 the selection panel. While it is on, taps and boxes add to (or remove from) the selection instead
@@ -123,11 +125,11 @@ because with units selected that tap means "move".
 | Value | Default | Meaning |
 |---|---|---|
 | Tap slop | 20 px | A finger moving less than this still counts as a tap, not a drag |
-| Box hold time | 0.2 s | Two fingers still for this long → box select; moving sooner → pinch zoom |
-| Box hold slop | 15 px per finger | Finger movement allowed during the hold before it counts as a pinch |
+| Box hold time | 0.4 s | One finger still for this long → box mode; moving sooner → scroll |
+| Box hold slop | 20 px | Finger movement allowed during the hold (same as tap slop) |
 | Double-tap window | 0.30 s and ≤ 40 px apart | Two taps closer than this make a double-tap |
 | Pan inertia | on, decays in ~0.3 s | The map glides briefly after a flick |
-| Two-finger cancel | always | If a second finger lands mid-gesture, the pending one-finger order is cancelled and the touch becomes a box or a pinch |
+| Two-finger cancel | always | If a second finger lands mid-gesture, the pending one-finger tap or box is cancelled and the touch becomes a pinch/scroll |
 
 These must live in a data file so they can be tuned without code changes (see AGENTS.md
 "keep game data in data files").
@@ -145,7 +147,7 @@ instant.
   2. When **commanding** (units selected): enemies first (attack), then own units/buildings
      (move next to them; later, guard/repair), then ground (move).
 - Infantry clumps: a tap on a tight group of own infantry selects the one closest to the
-  finger. The player can double-tap to grab the whole type, or use a two-finger box.
+  finger. The player can double-tap to grab the whole type, or press-and-hold to draw a box.
 
 ## 6. Orders and feedback
 
@@ -163,6 +165,16 @@ instant.
 fighting for the same spot. Formation rules are 🔨 Codex/🟢 ChatGPT territory; from the
 controls side the requirement is only that units arrive *around* the marker, quickly, without
 jamming.
+
+**Units never overlap (Game Director playtest, 2026-10-06).** On screen, two units must never
+sit on top of or pass through each other:
+- Each unit's spacing size matches its drawn size, so a unit's art never covers a neighbour's.
+- A moving unit steers around others. A friendly unit standing still in the way **steps aside**
+  and then settles, like classic RTS units do, instead of being driven through.
+- Groups arrive *around* the marker, each unit on its own spot, as now.
+- Brief touching while squeezing past is fine. Visibly stacked or ghosting units is a bug.
+How this is done (collision, avoidance, nudging) is 🔨 Codex's choice; this is the rule the
+player sees.
 
 **Always visible on the battlefield:**
 - A selection ring under every selected unit or building.
@@ -191,9 +203,9 @@ it after playtesting.
 
 | Control | Behaviour |
 |---|---|
-| One-finger drag | Pan; the map moves with the finger exactly (1:1), then glides briefly |
+| One- or two-finger drag | Pan; the map moves with the fingers exactly (1:1), then glides briefly |
 | Pinch | Zoom around the point between the fingers |
-| Zoom range | Closest: a tank fills about 1/10 of the screen height. Furthest: about one base and its surroundings fit on screen. Exact values in data. |
+| Zoom range | Closest: a tank fills about 1/10 of the screen height. Furthest: about one base and its surroundings fit on screen, which is **zoom 1.0** (one screen ≈ 17% of Breakpoint Valley). The Phase 1 build allowed 0.75 (31% of the map on one screen), which made the map feel small; raise the minimum to 1.0. Exact values in data. |
 | Minimap tap/drag | Jump/scrub the camera |
 | Map edges | Camera stops at the map border with a soft bounce, never showing beyond it |
 | Base button (in menu or double-tap minimap) | Centre on the Field Command |
@@ -219,7 +231,7 @@ The flow is "build first, place when ready", the classic base-building rhythm:
      (blocked, out of build range, on resources). The build-range area is shaded.
    - **Drag the ghost** with one finger to move it. It sits about 80 px *above* the finger so
      the finger never hides it. Dragging near the screen edge scrolls the map.
-   - **Dragging anywhere else** pans the camera as usual; pinch still zooms. Two-finger box
+   - **Dragging anywhere else** pans the camera as usual; pinch still zooms. Press-and-hold box
      select is switched off during placement.
    - **Small ✓ and ✕ buttons** sit just beside the ghost. ✓ places it (greyed out while red),
      ✕ cancels and leaves the building READY in the sidebar.
@@ -251,7 +263,7 @@ extra tap and prevents it.
   dragged onto the map.
 - Orders fire on **finger up**, and only if the touch stayed within the tap slop.
 - A **second finger landing cancels** the first finger's pending order (that touch is now a
-  box or a pinch).
+  pinch or scroll).
 - Building placement needs ✓ to confirm, and queue cancel needs a long-press.
 - The pause menu pauses the game in single-player, so the player can think and read.
 
@@ -268,8 +280,8 @@ that means:
   position is inside it (not a box on the logical grid).
 - **Placement ghost:** snaps to logical grid cells and is drawn as isometric diamonds, so
   green/red cells match what the player sees.
-- **Input layer:** turn raw touches into a small set of intents (Tap, DoubleTap, Pan, TwoFingerBox,
-  Pan, Pinch) in one place. Selection and Commands (`TECHNICAL_ARCHITECTURE.md` "System
+- **Input layer:** turn raw touches into a small set of intents (Tap, DoubleTap, Pan, HoldBox,
+  Pinch) in one place. Selection and Commands (`TECHNICAL_ARCHITECTURE.md` "System
   boundaries") consume intents and never read raw touch, so desktop mouse controls (§13) produce
   the same intents.
 
@@ -283,7 +295,7 @@ intents:
 | Left click | Tap |
 | Left double-click | Double-tap |
 | Left drag | One-finger drag (pan) |
-| Shift + left drag | Two-finger box select |
+| Shift + left drag, or hold left button 0.4 s then drag | Press-and-hold box select |
 | Mouse wheel | Pinch zoom |
 | Esc | Deselect / cancel placement |
 | S / A then click | Stop / Attack-move |
@@ -296,7 +308,7 @@ features that touch lacks.
 
 | Phase | Controls delivered |
 |---|---|
-| **1** Battlefield & movement | Tap select, double-tap select-type, two-finger box select, ✕ deselect, Select All Army, tap-to-move with marker, one-finger pan, pinch zoom, map-edge limits, forgiving tap radius, desktop mapping, thresholds in a data file |
+| **1** Battlefield & movement | Tap select, double-tap select-type, press-and-hold box select, ✕ deselect, Select All Army, tap-to-move with marker, one-finger pan, pinch zoom, map-edge limits, forgiving tap radius, desktop mapping, thresholds in a data file |
 | **2** Combat | Tap enemy to attack, Attack-Move, Stop, health bar visibility rules, attack feedback |
 | **3** Base construction | Pioneer Rig Deploy, sidebar with build/READY/place flow, ✓/✕ placement, production queues, rally points |
 | **4** Economy | Gatherer tap-to-harvest / tap-to-unload, credits/power in the top bar |
@@ -307,8 +319,9 @@ features that touch lacks.
 ## 15. How we'll test it
 
 **Automated (headless Godot, 🔨 Codex):** feed fake touch sequences to the input layer and check
-the result. Examples: a 10 px wiggle is a tap and a 30 px move is a pan; two fingers held
-still for 0.2 s then spread produce a box select, while two fingers spreading at once zoom; a second finger cancels a pending tap; a tap 35 px from a tiny
+the result. Examples: a 10 px wiggle is a tap and a 30 px move is a pan; one finger held
+still for 0.4 s then dragged produces a box select, while moving sooner scrolls; two fingers
+never select; a second finger cancels a pending tap; a tap 35 px from a tiny
 unit still selects it; a touch starting on a button never moves units.
 
 **By hand on a real phone (Game Director), each phase:**
@@ -323,7 +336,8 @@ unit still selects it; a touch starting on a button never moves units.
 
 1. ~~Landscape only?~~ ✅ Yes, landscape only (Game Director, 2026-10-06).
 2. ~~Smallest phone?~~ ✅ Default (~5.5") accepted; layout auto-adjusts.
-3. ~~Box select gesture?~~ ✅ One finger scrolls, two fingers draw the box (Game Director,
-   2026-10-06). Check by hand in Phase 1 that box and pinch-zoom don't get confused.
+3. ~~Box select gesture?~~ ✅ One finger scrolls; **press-and-hold one finger, then drag** draws
+   the box; two fingers only zoom/scroll (Game Director, after the first iPhone playtest,
+   2026-10-06; replaces the earlier two-finger box).
 4. ~~Placement confirm?~~ ✅ Yes, ✓/✕ confirm, kept small and unobtrusive (Game Director,
    2026-10-06).
