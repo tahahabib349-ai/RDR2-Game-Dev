@@ -46,9 +46,9 @@ A field is made of resource cells with visible remaining amount. When depleted, 
 | Harvest rate | 50 credits/second |
 | Unload rate | 500 credits/second |
 | Unload time for full cargo | 2 s |
-| Move speed | 3.2 cells/second |
+| Move speed | 2.2 cells/second (was 3.2; ×0.7 with the 108-cell map, 2026-10-06) |
 
-A full load therefore requires **20 seconds of harvesting**, plus travel and unloading. With a short opening route, one Gatherer should average roughly **1,600–2,000 credits per minute**. Actual income must be measured in the greybox because route distance and congestion matter.
+A full load therefore requires **20 seconds of harvesting**, plus travel and unloading. With a short opening route, one Gatherer should average roughly **1,600–2,000 credits per minute**. Actual income must be measured in the greybox because route distance and congestion matter. (2026-10-06 check after the speed change: the near field stays ~10 cells from each base, so a trip is ~9 s of driving + 20 s harvesting + 2 s unloading ≈ 31 s per 1,000 credits, about **1,900 credits per minute**, still inside this band.)
 
 ## Ore Works
 

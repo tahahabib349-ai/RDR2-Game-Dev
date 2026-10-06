@@ -13,15 +13,17 @@
 
 ## Unit stats
 
+> **2026-10-06 (🟣 Claude, covering 🟢 ChatGPT at the Game Director's request):** all speeds ×0.7 alongside the 108-cell map (`MISSION_ZERO.md`). Units used to cross the map in 12–22 s, which made it feel small; the Vanguard Tank now takes ~41 s base to base. Speed ratios between units are unchanged.
+
 | Unit | Cost | Build time | HP | Armor | Damage / profile | Range | Fire rate | Speed | Power | Capacity / economy |
 |---|---:|---:|---:|---|---|---:|---:|---:|---:|---|
-| **Ranger** | 150 | 5 s | 100 | Infantry | 12 Small Arms | 4.5 | 1.20 | 3.3 | 0 | — |
-| **Lancer** | 300 | 8 s | 90 | Infantry | 38 Piercing | 5.0 | 0.55 | 2.8 | 0 | — |
-| **Jackal** | 500 | 12 s | 260 | Light | 18 Small Arms | 4.0 | 1.50 | 6.0 | 0 | — |
-| **Vanguard Tank** | 900 | 18 s | 650 | Vehicle | 55 Cannon | 5.0 | 0.80 | 3.7 | 0 | — |
-| **Breaker Tank** | 1,400 | 28 s | 1,000 | Heavy | 95 Heavy Cannon | 5.5 | 0.45 | 2.7 | 0 | — |
-| **Gatherer** | 1,200 | 18 s | 750 | Vehicle | Unarmed | — | — | 3.2 | 0 | 1,000-credit-equivalent cargo |
-| **Pioneer Rig** | 3,000* | 40 s* | 1,200 | Heavy | Unarmed | — | — | 2.3 | 0 | Deploys to Field Command in 3 s |
+| **Ranger** | 150 | 5 s | 100 | Infantry | 12 Small Arms | 4.5 | 1.20 | 2.3 | 0 | — |
+| **Lancer** | 300 | 8 s | 90 | Infantry | 38 Piercing | 5.0 | 0.55 | 2.0 | 0 | — |
+| **Jackal** | 500 | 12 s | 260 | Light | 18 Small Arms | 4.0 | 1.50 | 4.2 | 0 | — |
+| **Vanguard Tank** | 900 | 18 s | 650 | Vehicle | 55 Cannon | 5.0 | 0.80 | 2.6 | 0 | — |
+| **Breaker Tank** | 1,400 | 28 s | 1,000 | Heavy | 95 Heavy Cannon | 5.5 | 0.45 | 1.9 | 0 | — |
+| **Gatherer** | 1,200 | 18 s | 750 | Vehicle | Unarmed | — | — | 2.2 | 0 | 1,000-credit-equivalent cargo |
+| **Pioneer Rig** | 3,000* | 40 s* | 1,200 | Heavy | Unarmed | — | — | 1.6 | 0 | Deploys to Field Command in 3 s |
 
 * The Pioneer Rig is **not producible in Mission Zero**. Cost/build time are reference values for later balancing; the player and AI each start with one.
 

@@ -62,7 +62,7 @@ The game should not make isometric screen coordinates the source of truth.
 
 ### Logical world
 
-- Mission Zero map: **72 x 72 logical square cells**.
+- Mission Zero map: **108 x 108 logical square cells** (raised from 72 on 2026-10-06 after the first playtest; see `MISSION_ZERO.md`).
 - Core gameplay coordinates are `Vector2` / `Vector2i` in logical map space.
 - Terrain cells store flags/data such as:
   - passable,
@@ -103,7 +103,7 @@ Reasons:
 
 ### Why not NavigationServer initially
 
-`NavigationServer2D` / navigation regions are useful for free-form polygon navigation and built-in avoidance, but they add more runtime state and tuning than Mission Zero needs. For a 72 x 72 grid with about 100 units, predictable grid pathfinding plus simple group/spacing behaviour is easier to control.
+`NavigationServer2D` / navigation regions are useful for free-form polygon navigation and built-in avoidance, but they add more runtime state and tuning than Mission Zero needs. For a 108 x 108 grid with about 100 units, predictable grid pathfinding plus simple group/spacing behaviour is easier to control.
 
 This is not a permanent ban. Revisit only if profiling/playtests show the grid approach cannot produce acceptable movement.
 

@@ -1,6 +1,8 @@
 # Mission Zero
 
 > **Status:** Phase 0 blueprint. All timings, coordinates and balance values are **tunable starting values**, not final balance.
+>
+> **2026-10-06 map revision (🟣 Claude, covering 🟢 ChatGPT's role at the Game Director's request; ChatGPT to review):** after the first iPhone playtest the map felt small (units crossed base to base in 12–22 s). The map grows from 72 to **108** cells (all coordinates ×1.5, near-ore offsets kept), unit speeds drop to ×0.7 (`UNIT_SYSTEM.md`), the ridge now runs edge to edge so there is no third route along the west edge, and East Cut moves south-east so it is a real detour. All numbers below were measured in the engine with a prototype of this layout.
 
 ## Purpose
 
@@ -12,7 +14,7 @@ Target first-clear time: **12–18 minutes** after the player understands the co
 
 ### Technical size
 
-- Logical map: **72 x 72 square cells**.
+- Logical map: **108 x 108 square cells**.
 - Rendering: 2D isometric projection; gameplay/pathfinding uses the logical square grid.
 - Suggested visual cell footprint: approximately **64 x 32 px** at 1.0 zoom.
 - Unit movement is continuous across passable cells; cells define terrain, building footprints and pathfinding.
@@ -25,42 +27,45 @@ Coordinates are logical grid coordinates `(x, y)`, origin at the north-west.
 
 | Area | Approx. center | Purpose |
 |---|---:|---|
-| Player start | (12, 58) | Safe south-west deployment basin |
-| Player near Flux Ore field | (20, 52) | First economy; visible shortly after deploying |
-| West expansion Flux Ore field | (18, 31) | Optional safer expansion |
-| Central rich Flux Ore field | (36, 36) | Contested economic reward |
-| Enemy near Flux Ore field | (53, 20) | Supports enemy economy |
-| Enemy base | (60, 14) | Final objective in north-east |
+| Player start | (18, 87) | Safe south-west deployment basin |
+| Player near Flux Ore field | (26, 81) | First economy; visible shortly after deploying |
+| West expansion Flux Ore field | (27, 46) | Optional safer expansion |
+| Central rich Flux Ore field | (54, 54) | Contested economic reward |
+| Enemy near Flux Ore field | (83, 27) | Supports enemy economy |
+| Enemy base | (90, 21) | Final objective in north-east |
 
 ### Terrain and chokepoints
 
 The map should feel like one readable battlefield, not a maze.
 
-- A broken rocky ridge runs roughly from **(8, 40) to (48, 18)** and divides the map diagonally.
-- **Central Pass**, centered near **(34, 36)**, is the shortest route between bases. It is about **7 cells wide** and contains the rich central Flux Ore field just off the lane, forcing economic activity into danger.
-- **East Cut**, centered near **(50, 42)**, is a longer **5–6 cell wide** flanking route. It lets a player avoid the main pass at the cost of travel time.
-- The western edge around **(17, 31)** contains the safer expansion field, but its approach is exposed to attacks coming through Central Pass.
+- A broken rocky ridge, about 4 cells thick, runs **from the west map edge to the south map edge** and walls the player's south-west basin off from the rest of the map. Its line passes through **(0, 61) → (12, 60) → (36, 58.5) → (51, 54) → (60, 39) → (72, 27) → (84, 48) → (75, 63) → (87, 84) → (101, 108)**. The only crossings are the two passes below; there is **no route along the west edge**.
+- **Central Pass**, centered near **(51, 54)**, is the shortest route between bases (**~106 cells**). It is about **7 cells wide** and has the rich central Flux Ore field just off the lane, forcing economic activity into danger.
+- **East Cut**, centered near **(84.5, 79)**, is a **6-cell-wide** flanking route, about **21% longer** (~128 cells, roughly 9 s extra for a Vanguard Tank). It lets a player avoid the main pass at the cost of travel time.
+- The **west expansion field (27, 46)** lies beyond the ridge. The player reaches it through Central Pass (~70 cells from the start), so its approach is exposed to attacks coming through the pass.
+- Travel times base to base through Central Pass: Jackal ~25 s, Vanguard Tank ~41 s, Ranger ~46 s, Lancer ~53 s, Breaker Tank ~56 s.
+- Each near Flux Ore field is ~10 cells from its base, unchanged from the 72-cell layout so the opening economy keeps its pace.
 - Decorative cliffs, scrub and debris may make the map feel denser, but must not create hidden one-cell traps.
 - No bridges, destructible terrain, elevation combat modifiers or amphibious areas in Mission Zero.
 
 ### Blockout sketch
 
 ```text
-NORTH
-┌──────────────────────────────────────────────────────────┐
-│                                           [ENEMY BASE]   │
-│                                        E-ORE             │
-│                              ###########                 │
-│                         #####          ####              │
-│                    WEST ORE        CENTRAL PASS          │
-│                       \\          [RICH ORE]            │
-│                        \\              \\              │
-│                         \\              \\ EAST CUT    │
-│                          \\              \\            │
-│           P-ORE                                      │
-│      [PLAYER START]                                  │
-└──────────────────────────────────────────────────────────┘
-SOUTH
+NORTH (y = 0)
+┌────────────────────────────────────────────────────────┐
+│                                       [ENEMY BASE]     │
+│                                     E-ORE              │
+│                                  #                     │
+│        WEST ORE                #   #                   │
+│                              #       #                 │
+│                       [RICH ORE]       #               │
+│ ############## CENTRAL PASS            #               │
+│               #####                    #  (ridge bends │
+│   P-ORE            ######             #    back west)  │
+│ [PLAYER START]           ###            EAST CUT       │
+│                             ####           #           │
+│                                 ######        #        │
+└────────────────────────────────────────────────────────┘
+SOUTH (y = 108)   # = ridge, wall from west edge to south edge
 ```
 
 The final greybox should be adjusted if pathfinding or camera readability is poor; the coordinates above define intent, not pixel-perfect art placement.
@@ -69,7 +74,7 @@ The final greybox should be adjusted if pathfinding or camera readability is poo
 
 ### Player
 
-- **1 Pioneer Rig** at approximately **(12, 58)**.
+- **1 Pioneer Rig** at approximately **(18, 87)**.
 - **4,000 credits**.
 - No other units or structures.
 - Mission begins with a short objective prompt: deploy the Pioneer Rig.
@@ -79,7 +84,7 @@ The final greybox should be adjusted if pathfinding or camera readability is poo
 
 The enemy starts with:
 
-- **1 Pioneer Rig** at approximately **(60, 14)**.
+- **1 Pioneer Rig** at approximately **(90, 21)**.
 - **4,000 credits**.
 - The AI deploys automatically at mission start and then follows the build script below.
 - The AI uses the same costs, build times, production rules, economy and power rules as the player. It does **not** receive free combat units or hidden income.
@@ -155,7 +160,7 @@ If the starting field is temporarily blocked or the Gatherer is destroyed, the A
 
 ### Attack timing and growth
 
-- **First attack target:** **4:30**.
+- **First attack target:** **4:30** (launch). With the 108-cell map the wave needs ~45–55 s to cross, so it reaches the player around **5:15–5:25**. Check in the Phase 5/6 playtest whether launch should move earlier.
 - Earliest allowed first attack in tuning: **4:15**.
 - Standard interval after Wave 1: **90 seconds**.
 - If a wave is still fighting after 90 seconds, the next wave waits until either the prior wave is mostly destroyed or 45 additional seconds pass.

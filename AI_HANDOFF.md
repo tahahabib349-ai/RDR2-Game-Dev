@@ -116,7 +116,7 @@ Phase 2 is not started or authorized by this task.
 - Engine: **Godot 4.6.3 stable official 7d41c59c4**, GDScript; full pin in `game/GODOT_VERSION`.
 - Targets: Android and iOS; desktop builds for development/testing.
 - Presentation: modern 2D isometric / 2.5D visual treatment on a 2D simulation; gameplay uses logical orthogonal square-grid coordinates.
-- Mission Zero map baseline: 72 x 72 cells.
+- Mission Zero map baseline: **108 x 108 cells** (raised from 72 on 2026-10-06, see below).
 - Pathfinding: shared `AStarGrid2D` for strategic paths plus lightweight local spacing; do not
   use NavigationServer initially unless profiling/playtests justify a change.
 - Stats/balance: custom Godot Resource classes and text `.tres` files; gameplay numbers are not
@@ -217,3 +217,20 @@ in the same build with headless Godot.
    iPhone (Phase 7 polish, not blocking).
 5. Observation, not a bug: group members travel at their own speed, so a Jackal reaches a far
    target ~10 s before the Rangers. Classic-RTS normal; revisit only if playtests want formations.
+
+### Map size, speeds and routes: decided 2026-10-06 (🟣 Claude, covering 🟢 ChatGPT at the Game Director's request)
+
+ChatGPT was unavailable, so the Game Director asked Claude to make this design call. 🟢 ChatGPT should
+review it when back. It was prototyped in the engine before being written down; numbers are measured.
+- **Map 72 → 108 cells.** All coordinates ×1.5, except that each near ore field stays ~10 cells
+  from its base so the opening economy keeps its pace. Exact coordinates: `MISSION_ZERO.md`.
+- **All unit speeds ×0.7** (`UNIT_SYSTEM.md`, `ECONOMY.md`). Base to base via Central Pass
+  (~106 cells): Jackal ~25 s, Vanguard ~41 s, Ranger ~46 s, Lancer ~53 s, Breaker ~56 s.
+  Estimated Gatherer income unchanged at ~1,900 credits/min.
+- **Third route closed:** the ridge now runs from the west edge to the south edge. With both
+  passes blocked, no route exists (verified).
+- **Ridge extension confirmed** and written into MISSION_ZERO. **East Cut moved** to (84.5, 79):
+  a 21% detour (~128 cells) instead of 9%.
+- The first enemy wave now reaches the player ~5:15–5:25 instead of ~4:50; recheck in Phase 5/6.
+- 🔨 Codex: apply via `mission_zero.tres` and the unit `.tres` files. The current suite then fails
+  5 tests that hard-code 72 or old coordinates; update them.
