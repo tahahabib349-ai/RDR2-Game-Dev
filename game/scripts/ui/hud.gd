@@ -8,6 +8,9 @@ var selection_label: Label
 var title: Label
 var box_rect: Rect2
 var box_visible: bool = false
+var hold_point: Vector2
+var hold_progress: float = 0.0
+var hold_visible: bool = false
 var selected_count: int = 0
 var buttons: Array[Button] = []
 
@@ -16,7 +19,7 @@ func configure(settings: GestureConfig) -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	title = Label.new()
-	title.text = "PHASE 1 GREYBOX · Breakpoint Valley\nTap: select/move · Drag: pan · Hold two fingers: box · Pinch: zoom"
+	title.text = "PHASE 1 GREYBOX · Breakpoint Valley\nTap: select/move · Drag: pan · Hold + drag: box · Two fingers: zoom/scroll"
 	title.add_theme_font_size_override("font_size", 18)
 	title.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(title)
@@ -27,7 +30,7 @@ func configure(settings: GestureConfig) -> void:
 	selection_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(selection_label)
 	blockers.append(selection_label)
-	add_button("✕", &"deselect")
+	add_button("X", &"deselect")
 	add_button("All Army", &"all_army")
 	add_button("−", &"zoom_out")
 	add_button("+", &"zoom_in")
@@ -95,7 +98,21 @@ func hide_box() -> void:
 	box_visible = false
 	queue_redraw()
 
+func show_hold(point: Vector2, progress: float) -> void:
+	hold_point = point
+	hold_progress = progress
+	hold_visible = true
+	queue_redraw()
+
+func hide_hold() -> void:
+	hold_visible = false
+	queue_redraw()
+
 func _draw() -> void:
+	if hold_visible:
+		draw_arc(hold_point, 24.0, 0.0, TAU, 40, Color(0.1, 0.15, 0.2, 0.7), 5.0)
+		if hold_progress > 0.0:
+			draw_arc(hold_point, 24.0, -PI / 2, -PI / 2 + TAU * hold_progress, 40, Color(0.3, 1, 0.7), 4.0)
 	if box_visible:
 		draw_rect(box_rect, Color(0.3, 0.9, 0.7, 0.12))
 		draw_rect(box_rect, Color(0.3, 0.9, 0.7), false, 2)

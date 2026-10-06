@@ -4,8 +4,8 @@
 script = ExtResource("1")
 type_id = &"vanguard_tank"
 display_name = "Vanguard"
-speed = 3.7
-spacing_radius = 0.45
+speed = 2.6
+spacing_radius = 1.25
 army = true
 vehicle = true
 color = Color(0.55, 0.8, 0.45, 1)
