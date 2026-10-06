@@ -41,23 +41,23 @@ documents/reference skills.
 | Task | Owner | Status |
 |---|---|---|
 | Phase 0 blueprint docs: `docs/GAME_DESIGN.md`, `docs/MISSION_ZERO.md`, `docs/TECHNICAL_ARCHITECTURE.md`, `docs/UNIT_SYSTEM.md`, `docs/BUILDING_SYSTEM.md`, `docs/ECONOMY.md` | 🟢 ChatGPT | ✅ Complete; awaiting Game Director review |
-| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v2 complete; awaiting Game Director approval (one open question, §16.3) |
+| `docs/MOBILE_CONTROLS.md`: touch selection, move/attack, camera, pinch zoom, building placement, group control | 🟣 Claude | ✅ Draft v2 complete; all §16 questions answered; awaiting Game Director approval |
 | `docs/ART_DIRECTION.md` | Unassigned (proposed: 🟢 ChatGPT, with 🟣 Claude for UI visuals) | Not started |
 
 ## Next recommended task
 
-Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md` (and answers its
-§16.3). Then 🔨 Codex starts Phase 1, following `MOBILE_CONTROLS.md` §14 "Phase 1" for controls.
+Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md`. Then 🔨 Codex starts Phase 1, following `MOBILE_CONTROLS.md` §14 "Phase 1" for controls.
 
 ## Architectural decisions
 
-- 2026-10-06 · Controls (Game Director decisions): **landscape only**; building placement uses
+- 2026-10-06 · Controls (Game Director decisions): **one finger scrolls the map, two fingers held
+  still draw the selection box** (two fingers moving at once = pinch zoom); **landscape only**; building placement uses
   small, calm ✓/✕ confirm buttons; smallest checked screen ~5.5", tablets show more battlefield
   rather than bigger buttons.
 - Controls (proposed in `docs/MOBILE_CONTROLS.md`, pending approval): 1280×720 design
-  resolution; one-finger drag pans, long-press-drag box-selects; orders fire on finger up;
+  resolution; orders fire on finger up;
   gesture thresholds live in a data file; one input layer turns touch/mouse into intents (Tap,
-  DoubleTap, LongPressDrag, Pan, Pinch) that feed Selection/Commands.
+  DoubleTap, Pan, TwoFingerBox, Pinch) that feed Selection/Commands.
 - Engine: Godot 4.x with GDScript; pin one exact stable Godot 4.x release when Phase 1 starts.
 - Targets: Android and iOS; desktop builds for development/testing.
 - Presentation: modern 2D isometric / 2.5D visual treatment on a 2D simulation; gameplay uses logical orthogonal square-grid coordinates.
@@ -74,20 +74,18 @@ Game Director approves the Phase 0 blueprint and `docs/MOBILE_CONTROLS.md` (and 
 
 ## Proposed changes awaiting the Game Director
 
-- Answer `docs/MOBILE_CONTROLS.md` §16 question 3 (one-finger drag pans, long-press-drag
-  box-selects). Landscape, screen size and ✓/✕ placement are settled.
 - Assign an owner for `docs/ART_DIRECTION.md`.
 
 ## Known issues
 
 - Blueprint numbers are explicitly tunable starting values and have not been validated in a playable
   build yet.
-- `docs/MOBILE_CONTROLS.md` §16.3 (one-finger drag pans vs box-selects) is still open. Keep the
-  gesture mapping in one input layer so it is cheap to swap.
+- Two-finger box select vs pinch zoom is told apart only by whether the fingers pause first
+  (0.2 s). Untested; it's the first thing to try by hand in Phase 1. Fallback: a "box" button.
 
 ## Recently modified files
 
-- 2026-10-06: `docs/MOBILE_CONTROLS.md` (v2), `AI_HANDOFF.md` (🟣 Claude)
+- 2026-10-06: `docs/MOBILE_CONTROLS.md` (v3, two-finger box select), `AI_HANDOFF.md` (🟣 Claude)
 - 2026-10-06: `docs/TECHNICAL_ARCHITECTURE.md` (modern isometric direction + hardware baseline)
 - 2026-10-06: `AI_HANDOFF.md` (Game Director decisions recorded)
 - 2026-10-06: `docs/MISSION_ZERO.md`
