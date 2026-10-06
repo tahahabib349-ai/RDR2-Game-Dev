@@ -6,7 +6,7 @@
 
 | Question | Decision |
 |---|---|
-| Presentation | **2D isometric** |
+| Presentation | **Modern 2D isometric / 2.5D visual presentation** on a 2D simulation |
 | Gameplay map | **Logical orthogonal square grid**, rendered isometrically |
 | Pathfinding | **AStarGrid2D** for strategic paths + lightweight local spacing; not NavigationServer initially |
 | Unit count target | Approximately **100 active units** on a mid-range phone |
@@ -18,17 +18,35 @@
 
 Codex should pin one exact stable Godot 4.x release when Phase 1 creates `game/project.godot` and the setup script. Do not silently float engine versions between machines.
 
-## Why 2D isometric
+## Why modern 2D isometric
 
-### Chosen: 2D isometric
+### Chosen: modern 2D isometric / 2.5D presentation
 
-This gives the battlefield the classic RTS spatial feel while keeping the project practical for a small team:
+The **simulation remains 2D**, but the finished presentation must not look like a deliberately retro or technically constrained 1990s/2000s isometric game. The reference is the clarity and battlefield composition of classic RTS games, not their rendering limitations.
 
-- units/buildings can start as simple sprites, shapes and labels,
-- maps can be authored from 2D tiles,
-- selection and placement remain 2D math,
-- there is no 3D camera, lighting, rigging, animation or mesh pipeline to solve before the game is fun,
-- mobile rendering cost is easier to control.
+The visual target may use:
+
+- high-resolution animated sprites or pre-rendered 3D-to-2D assets,
+- layered terrain, props and decals,
+- smooth unit rotation/animation,
+- dynamic-looking shadows and lighting effects implemented cheaply in 2D,
+- modern particles, muzzle flashes, explosions, trails and impact effects,
+- shader-based water, glow, distortion, fog and environmental effects where performance permits,
+- smooth camera movement and zoom,
+- polished UI, selection feedback and health/status presentation,
+- depth sorting, occlusion handling and subtle parallax to create a stronger sense of volume.
+
+This keeps the classic RTS spatial readability while letting art direction look current. Placeholder builds can still use simple sprites, shapes and labels until the gameplay works.
+
+The architecture deliberately separates **gameplay representation** from **visual treatment**. We can substantially modernize the rendering later without rewriting pathfinding, combat, economy or AI.
+
+Benefits for the small team:
+
+- selection, placement and combat remain 2D math,
+- maps can be authored from 2D tiles/layers,
+- placeholder art is cheap,
+- no full 3D character rigging/animation/camera pipeline is required before Mission Zero is fun,
+- mobile performance is easier to control.
 
 ### Rejected for now: pure 2D top-down
 
@@ -423,7 +441,23 @@ Rules:
 - keep placeholder visuals cheap and shared,
 - test release builds on actual mid-range Android hardware before declaring performance solved.
 
-Initial performance acceptance target: stable **30 fps minimum** on the chosen mid-range test phone during a 100-unit battle, with 60 fps as the preferred experience where hardware allows.
+### Minimum hardware class
+
+The Game Director's target is **iPhone 11-class hardware or better**.
+
+- iOS minimum performance reference: **iPhone 11 / A13 Bionic class**.
+- Android minimum performance reference: approximately **2019 flagship-class Snapdragon 855 / Adreno 640 or better**, rather than a specific brand/model.
+- Newer upper-midrange Android SoCs should naturally exceed this floor; the important rule is measured performance, not the marketing tier name.
+- The shipping OS-version floor can be decided later based on Godot/export requirements and store policy; this section describes **performance class**, not OS compatibility.
+
+Performance acceptance target for this minimum class:
+
+- **30 fps is the hard minimum** during a 100-unit stress battle.
+- **60 fps is the desired normal target** for Mission Zero gameplay on capable devices.
+- Controls must remain responsive even if rendering drops to 30 fps because gameplay simulation is independent of rendering.
+- Thermal throttling matters: test sustained battles, not only a 30-second benchmark.
+
+Do not raise the minimum hardware requirement merely to compensate for avoidable code/rendering inefficiency.
 
 ## Headless Godot testing
 
